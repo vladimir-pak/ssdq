@@ -1,0 +1,12 @@
+*.pyc
+app.db
+tmp
+build/
+dist/
+ssdq/app/static/assets/node_modules/
+ssdq.egg-info/
+.idea/
+.vscode/
+env
+venv
+.sublime
