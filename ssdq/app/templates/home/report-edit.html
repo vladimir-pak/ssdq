@@ -1,0 +1,187 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Анализ результатов контроля {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+<link rel="stylesheet" href="/static/assets/css/select_rows.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Инциденты контроля № {{control_id}}</h1>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- { set notifications = current_user.has_notification() } -->
+          <form method="post" id="formId">
+            <div class="card card-success card">
+              <div class="card-header bg-primary">
+                <h3 class="card-title">Просмотр инцидентов по запуску № {{wf_id}}</h3>
+                <div class="card-tools">
+                  <div class="tltp">
+                    <i class="nav-icon fas fa-info-circle fa-lg"></i>
+                    <span class="tooltiptext p-2 tltp-left-bottom" style="width: 500px !important;">
+                        Выберите строку из таблицы с результатами ниже, по которой необходимо добавить информацию.
+                        <br>Введите/измените поля:
+                        <br>* Номер трека Jira (номер задачи)
+                        <br>* Причина ошибки (из выпадающего списка в соответствии со справочником команды авторизованного пользователя)
+                        <br>* Первоисточник ошибки (свободный ввод)
+                    </span> 
+                </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>ID записи</label>
+                      <input type="text" class="form-control" id="xk" name="xk" readonly>
+                    </div>
+                    <div class="form-group">
+                      <label>Трек Jira для реестрового инцидента</label>
+                      <div class="form-control">
+                        <a href="" id="generalJiraIssue"></a>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>Трек Jira одиночного инцидента</label>
+                      <div class="form-control"><a id="jira_issue"></a>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>Статус трека</label>
+                      <div class="row mr-0 ml-0">
+                        <input type="text" class="form-control" id="jira_status" readonly value="">
+                        <a data-title="Обновить" id="getStatus" style="position: absolute; right: 1vw;"
+                            class="nav-link tip">
+                            <i class="fas fa-redo fa-lg"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Причина ошибки</label>
+                      <select class="form-control" id="error_reason" name="error_reason">
+                        <option value=""></option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Первоисточник ошибки</label>
+                      <textarea class="form-control" style="height:123px;"
+                        placeholder="Первоисточник ошибки" id="error_origin" name="error_origin"></textarea>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <button type="button" style="float:right; width:25%; display:none;" class="btn btn-outline-primary" id="createTask">Создать трек Jira</button>
+                    <!-- <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="update">Изменить</button> -->
+                  </div>
+                  <div class="col-sm-6">
+                    <button type="button" style="float:left; width:25%;" class="btn btn-outline-primary" id="addAll">Применить для всех</button>
+                    <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="add">Применить</button>
+                    <!-- <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="hardRemove">Удалить</button> -->
+                    <button type="button" style="float:right; width:25%;" class="btn btn-outline-primary bg-gpb" id="backspace"
+                      onclick="window.history.back()">Назад</button>
+                  </div>
+                </div>
+              <!-- /.card-body -->
+              </div>
+            </div>
+            <!-- /.card-body -->
+          </form>
+          <div class="modal fade" id="modal-loading">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-body">
+                  <div class="d-flex justify-content-center">
+                      <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+          </div>
+          <div class="card card-success">
+            <div class="card-header bg-primary">
+              <h3 class="card-title">Результаты проверки</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <div id="reportTable">
+              <table id="report" role="grid" style="overflow-x: auto; display: block; font-size:12px"
+                class="dataframe table table-head-fixed table-bordered table-striped dataTable no-footer display select">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Трек Jira</th>
+                    <th>Причина ошибки</th>
+                    <th>Первоисточник ошибки</th>
+                    <th style="width: 5vw;">Идентификатор записи</th>
+                  </tr>
+                </thead>
+              </table>
+            <!-- /.card-body -->
+          </div>
+        </div>
+        <!--/.col (right) -->
+      </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script type="text/javascript">
+  window.controlId = {{ control_id }};
+  window.wfId = {{ wf_id }};
+  window.jiraUrl = "{{ jira_url }}";
+  window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/assets/js/datatable_handler/utils.js"></script>
+<script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
+<script src="/static/assets/js/views/report/report_edit.js"></script>
+
+{% endblock javascripts %}

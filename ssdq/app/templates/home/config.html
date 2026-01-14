@@ -1,0 +1,111 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Системные настройки {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Системные настройки</h1>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <form method="post" id="formId">
+            <input type="hidden" name="csrf_token" id="csrf_token" value="">
+            <div class="card card-success">
+              <div class="card-header bg-primary">
+                <h3 class="card-title">Системные настройки</h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Периодичность актуализации (в днях)</label>
+                      <input type="text" id="actual_freq" name="actual_freq" class="form-control" value="{{conf.actual_freq}}">
+                    </div>
+                    <div class="form-group">
+                      <label>Оповещение об актуализации (в днях)</label>
+                      <input type="text" id="actual_alert" name="actual_alert" class="form-control" value="{{conf.actual_alert}}">
+                    </div>
+                    <div class="form-group">
+                      <label>Длительность актуализации (в днях)</label>
+                      <input type="text" id="actual_duration" name="actual_duration" class="form-control" value="{{conf.actual_duration}}">
+                    </div>
+                    <div class="form-group">
+                      <label>Глубина хранения логов (в днях)</label>
+                      <input type="text" id="logs_depth" name="logs_depth" class="form-control" value="{{conf.logs_depth}}">
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Количество повторных запусков контроля</label>
+                      <input type="text" id="retry_count" name="retry_count" class="form-control" value="{{conf.retry_count}}">
+                    </div>
+                    <div class="form-group">
+                      <label>Максимальная длительность работы контроля (в минутах)</label>
+                      <input type="text" id="control_duration" name="control_duration" class="form-control" value="{{conf.control_duration}}">
+                    </div>
+                    <div class="form-group">
+                      <label>Длительность хранения результатов контролей (в днях)</label>
+                      <input type="text" id="result_depth" name="result_depth" class="form-control" value="{{conf.result_depth}}">
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" style="float:left; width:20%" class="btn btn-block btn-outline-primary">Изменить</button>
+                <input type="button" style="float:right; width:20%" class="btn btn-block btn-outline-primary" onclick="location.href='/main';"
+                        value="Выход" />
+              </div>
+              <!-- /.card-body -->
+            </div>
+          </form>
+        </div>
+        <!--/.col (right) -->
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script type="text/javascript">
+  let csrf_token = "{{ csrf_token() }}";
+  $("#formId").on("submit", function(event) {
+    $("#csrf_token").val(csrf_token);
+  });
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock javascripts %}

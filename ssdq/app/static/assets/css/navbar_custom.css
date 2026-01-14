@@ -1,0 +1,72 @@
+
+.nav-link.tip {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-link.tip::after {
+    content: attr(data-title);
+    position: absolute;
+    top: 100%;
+    /* Позиционируем под элементом */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px;
+    border-radius: 5px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+}
+
+.nav-link.tip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+.submenu {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.submenu-open .submenu {
+    display: block;
+}
+
+.submenu a {
+    color: #333;
+    text-decoration: none;
+}
+
+.submenu a:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.submenu-toggle {
+    float: right;
+    margin-left: 10px;
+}
+
+.submenu-open .submenu-toggle {
+    transform: rotate(90deg);
+}
+
+.dropdown-item:active {
+    background-color: transparent;
+    color: black;
+}

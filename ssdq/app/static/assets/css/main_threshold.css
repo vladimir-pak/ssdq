@@ -1,0 +1,19 @@
+.warning {
+    color: #ff7900;
+    visibility: visible;
+}
+
+.info {
+    color: #798bac;;
+    visibility: visible;
+}
+
+.danger {
+    color: #f6514c;;
+    visibility: visible;
+}
+
+.success {
+    color: #44bf78;
+    visibility: visible;
+}

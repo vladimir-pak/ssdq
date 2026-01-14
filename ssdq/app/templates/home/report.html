@@ -1,0 +1,225 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Результаты контроля {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+<link rel="stylesheet" href="/static/assets/css/select_rows.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+  
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1 class="m-0 text-dark">Отчет по контролю {{ control_id }}</h1>
+          </div><!-- /.col -->
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-item active">Результат</li>
+            </ol>
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+      </div><!-- /.container-fluid -->
+    </div>
+    <!-- /.content-header -->
+    <section class="content">
+      <div class="row">
+            <!-- /.col (LEFT) -->
+        <div class="col-md-12">
+              <!-- BAR CHART -->
+          <div class="card card-primary card-outline">
+            <div class="card-header">
+              <h3 class="card-title">
+                <i class="far fa-chart-bar"></i>
+                Динамика ошибок
+              </h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-tool" data-card-widget="remove">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart" style="width: 100%;">
+                <canvas id="barChart" style="width: 100%; min-height: 250px; height: 300px; max-height: 300px;"></canvas>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="row">
+                      <div class="col-sm-3">
+                        <select class="form-control" style="font-size:14px;" id="startdate">
+                        </select>
+                      </div>
+                      <div class="col-sm-3">
+                        <select class="form-control" style="font-size:14px;" id="enddate">
+                        </select>
+                      </div>
+                      <div class="col-sm-3">
+                        <button type="button" class="btn btn-outline-primary" id="updateChart">Применить</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <!-- /.card-body-->
+            </div>
+          <!-- /.card -->
+          </div>
+        <!-- /.col (RIGHT) -->
+        </div>
+      <!-- /.row -->
+      </div>
+    </section>
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <!-- /.card -->
+            <div class="card">
+              <!-- /.card-header -->
+              <div class="card-body">
+                <div class="row ml-2" style="justify-content: center;">
+                  <div class="col-sm-1">
+                    <a data-title="Запустить контроль" id="triggerDag"
+                      class="nav-link tip">
+                      <i class="fas fa-play fa-lg"></i>
+                    </a>
+                  </div>
+                  <div class="col-sm-1">
+                    <a data-title="Остановить контроль" id="killDag"
+                      class="nav-link tip">
+                      <i class="fas fa-stop fa-lg"></i>
+                    </a>
+                  </div>
+                  <div class="col-sm-1">
+                    <a data-title="Статус контроля" id="statusDag"
+                        class="nav-link tip">
+                        <i class="fas fa-info-circle fa-lg"></i>
+                    </a>
+                  </div>
+                  <div class="col-sm-1">
+                    <a data-title="Выключить" id="pauseDag"
+                      class="nav-link tip">
+                      <i class="fas fa-ban fa-lg"></i>
+                    </a>
+                  </div>
+                  <div class="col-sm-1">
+                    <a data-title="Включить" id="unpauseDag"
+                      class="nav-link tip">
+                      <i class="fas fa-redo fa-lg"></i>
+                    </a>
+                  </div>
+                  <div class="col-sm-1">
+                    <a data-title="Редактировать контроль" href="/controls/{{control_id}}"
+                      class="nav-link tip">
+                      <i class="fas fa-pencil-alt fa-lg"></i>
+                    </a>
+                  </div>
+                </div>
+              <!-- /.card-footer -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+		  </div>
+		</div>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <!-- /.card -->
+            <div class="card">
+              <div class="card-header">
+                <div class="row">
+                  <div style="display: inline-block;">
+                      <h3 class="card-title" style="padding-top: 10%;">Отчет за:&nbsp</h3>
+                  </div>
+                  <div style="display: inline-block;">
+                    <select autocomplete="on" id="reportDate" class="form-control select2" style="width: 100%;">
+                    </select>
+                  </div>
+                  <div class="col-sm-2">
+                    <button type="button" class="btn btn-outline-primary" style="width:100%; float:right" id="reportEdit">Инциденты</button>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body card-body table-responsive" id="reportTable">
+				        <table
+                  class="dataframe table table-bordered table-striped dataTable no-footer"
+                  id="report" role="grid"
+                  style="overflow-x: auto; display: block; font-size:12px;">
+                  <thead>
+                    <tr style="text-align: center;" role="row">
+                    </tr>
+                  </thead>
+                </table>
+              <!-- /.card-footer -->
+            </div>
+            <div id="message"></div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+		</div>
+		</div>
+    </section>
+    <!-- /.content -->
+	<!-- Main content -->
+
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script type="text/javascript">
+  window.controlId = {{ control_id }};
+  window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+<script src="/static/assets/node_modules/chart.js/dist/Chart.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+
+<script src="/static/assets/node_modules/jszip/dist/jszip.min.js"></script>
+
+<script src="/static/assets/node_modules/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-buttons/js/buttons.print.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-buttons/js/buttons.html5.min.js"></script>
+
+
+
+<script src="/static/assets/js/views/report/chart.js"></script>
+<script src="/static/assets/js/views/report/report.js"></script>
+<script src="/static/assets/js/api/apiAirflow.js"></script>
+ 
+{% endblock javascripts %}

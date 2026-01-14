@@ -1,0 +1,221 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Forms General {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/select_rows.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Команда</h1>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <form method="post">
+            <div class="card card-success card">
+              <div class="card-header bg-primary">
+                <h3 class="card-title">Редактирование</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>ID</label>
+                      <input type="text" disabled class="form-control" value="{{id}}" id="id" name="id">
+                    </div>
+                    <div class="form-group">
+                      <label>Наименование</label>
+                      <input type="text" class="form-control" id="name" name="name" required
+                      {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                      <label>Отображаемое наименование</label>
+                      <input type="text" class="form-control" id="display_name" name="display_name" required
+                      {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Проект Jira</label>
+                      <input type="text" class="form-control" id="jira_project" name="jira_project"
+                        value="" {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                      <label>Описание</label>
+                      <textarea class="form-control" id="description" name="description"
+                        value="" style="height: 123px;"
+                        {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}></textarea>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    {% if current_user.admin or current_user.role_name == "TeamOwner" %}
+                    <input type="button" style="float: left; width:25%;" class="btn btn-outline-primary" name="update" id="update"
+                      value="Сохранить"/>
+                      {% if current_user.team_id|string == id %}
+                    <input type="button" style="float: right; width:25%;" class="btn btn-outline-primary"
+                      value="Подключения" data-toggle="modal" data-target="#modal-conn" id="modalButton"/>
+                      {% endif %}
+                    {% endif %}
+                  </div>
+                  <div class="col-sm-6">
+                    <input type="button" style="width:20%; float:right;" class="btn btn-outline-primary" onclick="location.href='/admin';"
+                      value="Выход" />
+                  </div>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card-body -->
+            <div class="modal fade" id="modal-conn">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h4 class="modal-title">Создание подключения базы данных</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label>Источник</label>
+                      <select class="form-control"  id="connId" name="connId">
+                    </select>
+                    </div>
+                    <!-- <div class="form-group">
+                      <label>Хост</label>
+                      <input type="text" class="form-control" id="host" name="host"
+                        value="">
+                    </div>
+                    <div class="form-group">
+                      <label>Порт</label>
+                      <input type="text" class="form-control" id="port" name="port"
+                        value="">
+                    </div>
+                    <div class="form-group">
+                      <label>База данных</label>
+                      <input type="text" class="form-control" id="dbName" name="dbName"
+                        value="">
+                    </div> -->
+                    <div class="form-group">
+                      <label>ТУЗ</label>
+                      <input type="text" class="form-control" id="dbuser" name="dbuser"
+                        value="">
+                    </div>
+                    <div class="form-group">
+                      <label>Пароль</label>
+                      <input type="text" class="form-control" id="password" name="password"
+                        value="">
+                    </div>
+                  </div>
+                  <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Выход</button>
+                    <button type="button" class="btn btn-outline-primary" id="createDbConn">Сохранить изменения</button>
+                  </div>
+                </div>
+                <!-- /.modal-content -->
+              </div>
+              <!-- /.modal-dialog -->
+            </div>
+          </form>
+          
+          <div class="modal fade" id="modal-loading">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-body">
+                  <div class="d-flex justify-content-center">
+                      <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+          </div>
+          <div class="card card-success">
+            <div class="card-header bg-primary">
+              <h3 class="card-title">Члены команды</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <div id="table">
+              <table id="users" class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>ID пользователя</th>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Роль</th>
+                    <th>Команда</th>
+                  </tr>
+                </thead>
+              </table>
+            <!-- /.card-body -->
+              </div>
+            </div>
+        <!--/.col (right) -->
+          </div>
+        </div>
+        <!--/.col (right) -->
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script type="text/javascript">
+  window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+
+<script src="/static/assets/js/datatable_handler/utils.js"></script>
+<script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
+<script src="/static/assets/js/views/admin/teams_edit.js"></script>
+
+{% endblock javascripts %}

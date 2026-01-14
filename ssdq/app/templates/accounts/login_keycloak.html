@@ -1,0 +1,51 @@
+{% extends "layouts/base-fullscreen.html" %}
+
+{% block title %} Авторизация {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} login-page {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+    <link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="background"></div>
+<div class="row" style="margin-right: unset; margin-left: unset;">
+    <div class="col-3" style="margin: 8% 0 0 10%;">
+        <div class="login-box">
+            <img alt="SDQ Logo" class="icon" style="height: auto; width: 300px; margin-right: 50%;" src="/static/assets/Logo_SDQ.svg">
+        
+            <div class="row justify-content-center" style="font-weight: 500; font-size: 1.25rem; line-height: 1.25rem; font-family: 'Poppins', sans-serif; margin: 40% 0 10% 0;">
+                <p style="color: #fff; text-align: center; white-space: pre-line;">Cистема пользовательского мониторинга качества данных</p>
+            </div>
+            <div class="row">
+                <a type="button" style="font-weight: 500; font-size: 1.4rem; font-family: 'Poppins', sans-serif; color: rgb(107, 114, 128); background-color: #fff;"
+                    {% if prev_url %} href="/private?next={{next_url}}" {% else %} href="/private" {% endif %} class="btn btn-block">Войти с помощью KeyCloak</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-6" style="margin: 10% 0 0 15%;">
+        <div class="row justify-content-center" style="font-weight: 500; font-size: 4rem; line-height: 1.25rem; font-family: 'Poppins', sans-serif;">
+            <p style="color: #fff; text-align: center; white-space: pre-line;">Self-Service</p>
+        </div>
+        <div class="row justify-content-center mt-4" style="font-weight: 500; font-size: 4rem; line-height: 1.25rem; font-family: 'Poppins', sans-serif;">
+            <p style="color: #fff; text-align: center; white-space: pre-line;">Data Quality</p>
+        </div>
+    </div>
+</div>
+        <!-- /.login-card-body -->
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+{% endblock javascripts %}

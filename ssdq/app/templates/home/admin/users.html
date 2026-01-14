@@ -1,0 +1,162 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Пользователи {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/static/assets/node_modules/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/select_rows.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Пользователи</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item active">Пользователи</li>
+          </ol>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <form method="post">
+            <div class="card card-success card">
+              <div class="card-header bg-primary">
+                <h3 class="card-title">Редактирование пользователя</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>ID</label>
+                      <input type="text" class="form-control" id="id" name="id" readonly>
+                    </div>
+                    <div class="form-group">
+                      <label>Команда</label>
+                      <select class="form-control" id="team_id" name="team_id" required
+                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label>Роль</label>
+                      <select class="form-control" id="role" name="role" required
+                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>ФИО</label>
+                      <input type="text" class="form-control" id="name" name="name" required readonly>
+                    </div>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label>Email</label>
+                      <input type="text" class="form-control" id="email" name="email" required readonly>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-sm-6">
+                    {% if current_user.admin %}
+                    <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="update">Изменить</button>
+                    {% endif %}
+                    <!-- <button type="button" style="float:right; width:25%; display:none;" class="btn btn-outline-primary" id="hardRemove">Удалить</button> -->
+                  </div>
+                  <div class="col-sm-6">
+                    <button type="button" style="float:right; width:25%" class="btn btn-outline-primary" onclick="location.href='/admin';">Выход</button>
+                  </div>
+                  
+                </div>
+              <!-- /.card-body -->
+              </div>
+            </div>
+            <!-- /.card-body -->
+          </form>
+          <div class="card card-success">
+            <div class="card-header bg-primary">
+              <h3 class="card-title">Все пользователи</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <table id="users" class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Email</th>
+                    <th>Роль</th>
+                    <th>Команда</th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            <!-- /.card-body -->
+          </div>
+        </div>
+        <!--/.col (right) -->
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script type="text/javascript">
+  window.userTeamId = "{{ current_user.team_id }}";
+  window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
+
+<script src="/static/assets/js/datatable_handler/utils.js"></script>
+<script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
+<script src="/static/assets/js/views/admin/users.js"></script>
+
+{% endblock javascripts %}

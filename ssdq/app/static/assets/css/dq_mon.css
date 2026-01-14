@@ -1,0 +1,234 @@
+.background {
+  background-image: url('/static/assets/img/login-bg.png'); 
+  background-size: 100% 100%; 
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.login-box {
+  justify-content: space-evenly;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 400px;
+}
+
+.scroll-table table {
+  table-layout:fixed;
+	display: inline-block;
+	vertical-align: top;
+	max-width: 100%;
+  max-height: 720px;
+	max-height: 100%;
+	overflow-x: auto;
+  background:#FFFFFF;
+}
+.scroll-table tbody td {
+	max-width:300px;
+}
+.scroll-table thead th {
+	max-width:300px;
+  background:#FFFFFF;
+  vertical-align: top;
+}
+.t-head {
+  max-width:300px;
+  background:#8B0000;
+  vertical-align: top;
+}
+
+
+.btn-purple{color:#fff;border-color:#7147e8e6;font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    background-color:#7147e8e6;
+    border: 1px solid;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;}
+.btn-purple:hover{color:#fff;background-color:#785acc;border-color:#785acc; border: 1px solid;}
+.btn-purple.focus,.btn-purple:focus{box-shadow:0 0 0 0 rgba(220,53,69,.5)}
+.btn-purple.disabled,.btn-purple:disabled{color:#fff;background-color:#785acc;border-color:#785acc; border: 1px solid;}
+.btn-purple:not(:disabled):not(.disabled).active,.btn-purple:not(:disabled):not(.disabled):active,
+.show>.btn-purpledropdown-toggle{color:#fff;background-color:#785acc;border-color:#785acc; border: 1px solid;}
+.btn-purple:not(:disabled):not(.disabled).active:focus,
+.btn-purple:not(:disabled):not(.disabled):active:focus,
+.show>.btn-purple.dropdown-toggle:focus{box-shadow:0 0 0 0 rgba(220,53,69,.5)}
+
+
+#Purple .slider-selection{
+    background:#7147e8e6
+}
+#Purple .slider-handle{
+    background:#7147e8e6
+}
+
+.btn-width {
+  width:15%;
+}
+
+.tltp {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
+.tltp .tooltiptext {
+  visibility: hidden;
+  width: 300px;
+  background-color: #fff;
+  opacity: 0.9;
+  border-color: black;
+  border: solid;
+  color: black;
+  text-align: left;
+  border-radius: 6px;
+  padding: 5px 0;
+  bottom: 100%;
+  left: 50%;
+  font-size: 14px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+
+.tltp:hover .tooltiptext {
+  visibility: visible;
+}
+
+.tltp-left-bottom {
+  top: 100% !important;
+  right: 50% !important;
+  left: initial !important;
+  bottom: initial !important;
+}
+
+.nav-link.tip-top {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-link.tip-top::after {
+  content: attr(data-title);
+  position: absolute;
+  bottom: 100%;
+  /* Позиционируем над элементом */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+}
+
+.nav-link.tip-top:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-link.tip-left {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-link.tip-left::after {
+  content: attr(data-title);
+  position: absolute;
+  top: 100%;
+  /* Позиционируем над элементом */
+  left: -50%;
+  transform: translateX(-75%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s;
+}
+
+.nav-link.tip-left:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.main-banner {
+  color: #fff;
+  border-radius: .25rem;
+  height: 100%;
+}
+
+.main-banner:hover {
+  border-color: #007bff !important;
+  color: #b2e4ff !important;
+}
+
+.main-selected-card {
+  border-left: 4px solid #2196f3;
+}
+
+.no-hover {
+  pointer-events: none;
+}
+
+.fluid-text {
+  font-size: calc(0.5vw + 0.5vh + 0.3vmin) !important;
+  margin-bottom: 0;
+}
+
+.fluid-header {
+  font-size: calc(1.4vw + 1.4vh + 0.5vmin) !important;
+  margin-bottom: 0;
+}
+
+.favorite-div {
+  position: absolute;
+  right: 0; 
+  visibility: hidden;
+}
+
+.favorite-div:hover {
+  visibility: visible;
+}
+
+.favorite-selected-div {
+  position: absolute;
+  right: 0; 
+  visibility: visible;
+}
+
+.control-card:hover {
+  background-color: #F5F5F5;
+}
+
+.control-card:hover + .favorite-div {
+  visibility: visible;
+}
+
+.control-info-card {
+  background-color: #F8F8F8;
+  padding: 16px;
+  border-radius: 5px;
+}
+
+.small-box {
+  height: 6rem;
+}
+
+.nav .nav-item {
+  align-content: center;
+}
+
+.charts-p {
+  padding: 0.25rem 0.75rem 0.5rem 0.75rem;
+}

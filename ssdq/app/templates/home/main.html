@@ -1,0 +1,314 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Обзор {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+
+<link rel="stylesheet" href="/static/assets/css/main_threshold.css">
+
+<link rel="stylesheet" href="/static/assets/css/datatables_ssdq.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="content-wrapper">
+    <div class="content-header">
+    </div>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <!-- Small boxes (Stat box) -->
+        <div id="container">
+        <div class="row">
+          <div class="col-lg-2">
+            <div class="small-box">
+              <div class="inner main-banner" style='background-color: #44bf78; min-height: 90px;'
+                onclick="window.location.href='/monitoring/USER'">
+                <h1 class="fluid-header" id="usr_cnt"></h1>
+                <p class="fluid-text">Мои контроли</p>
+              </div>
+            </div>
+          </div>
+            <!-- small box -->
+          <div class="col-lg-2">
+            <div class="small-box">
+              <div class="main-banner inner" style='background-color: #4478ff; min-height: 90px;' 
+                onclick="window.location.href='/monitoring/DEVELOPMENT'">
+                <h1 class="fluid-header" id="dev_cnt"></h1>
+                <p class="fluid-text">Черновик</p>
+              </div>
+              </a>
+            </div>
+          </div>
+            <!-- small box -->
+          <div class="col-lg-2">
+            <div class="small-box">
+              <div class="main-banner inner" style='background-color: #1b438b; min-height: 90px;'
+                onclick="window.location.href='/monitoring/EXPLOITATION'">
+                <h1 class="fluid-header" id="exp_cnt"></h1>
+                <p class="fluid-text">В эксплуатации</p>
+              </div>
+            </div>
+          </div>
+            <!-- small box -->
+          <div class="col-lg-2">
+            <div class="small-box">
+              <div class="main-banner inner" style='background-color: #f6514c; min-height: 90px;'
+                onclick="window.location.href='/monitoring/EXPIRING'">
+                <h1 class="fluid-header" id="expiring_cnt"></h1>
+                <p class="fluid-text">Подходит срок актуализации</p>
+              </div>
+            </div>
+          </div>
+            <!-- small box -->
+          <div class="col-lg-2">
+            <div class="small-box">
+              <div class="main-banner inner" style='background-color: #ff7900; min-height: 90px;'
+                onclick="window.location.href='/monitoring/ACTUALIZATION'">
+                <h1 class="fluid-header" id="act_cnt"></h1>
+                <p class="fluid-text">На актуализации</p>
+              </div>
+            </div>
+          </div>
+            <!-- small box -->
+          <div class="col-lg-2">
+            <div class="small-box">
+              <div class="main-banner inner" style='background-color: #798bac; min-height: 90px;'
+              onclick="window.location.href='/monitoring/DISABLED'">
+                <h1 class="fluid-header" id="cncl_cnt"></h1>
+                <p class="fluid-text">Отключенных контролей</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" id="rowCharts">
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header border-0">
+                <div class="d-flex justify-content-between">
+                  <h3 class="card-title" style="color: #757575;">Динамика количества ошибок</h3>
+                </div>
+              </div>
+              <div class="card-body charts-p">
+                <div class="position-relative mb-1">
+                  <canvas id="controlsError" style="height: 25vh;"></canvas>
+                </div>
+
+                <div class="d-flex flex-row justify-content-end">
+                    <i class="fas fa-square" style="color: #f6514c; padding-top: 0.3rem;"></i>
+                    <p style="font-size: 1rem; color: #757575; margin-bottom: 0;"> С ошибками</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card">
+              <div class="card-header border-0">
+                <div class="d-flex justify-content-between">
+                  <h4 class="card-title" style="color: #757575;">Динамика внедрения контролей</h4>
+                </div>
+              </div>
+              <div class="card-body charts-p">
+                <div class="position-relative mb-1">
+                  <canvas id="controls" style="height: 25vh;"></canvas>
+                </div>
+                <div class="d-flex flex-row justify-content-end">
+                    <i class="fas fa-square ml-2" style="color: #1b438b; padding-top: 0.3rem;"></i>
+                    <p style="font-size: 1rem; color: #757575; margin-bottom: 0;"> В эксплуатации</p>
+                    <i class="fas fa-square ml-2" style="color: #ff7900; padding-top: 0.3rem;"></i>
+                    <p style="font-size: 1rem; color: #757575; margin-bottom: 0;"> На актуализации</p>
+                    <i class="fas fa-square ml-2" style="color: #798bac; padding-top: 0.3rem;"></i>
+                    <p style="font-size: 1rem; color: #757575; margin-bottom: 0;"> Отключен</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <div class="card-header p-2 row" style="border: none;">
+                <div class="card-tools col-lg-11" style="float: left;">
+                  <ul class="nav nav-pills ml-auto row" id="panels">
+                    <li class="nav-item col-2 p-1 text-center">
+                      <a class="nav-link active" href="#teams-controls" data-toggle="tab" id="teamsButton">Контроли команды</a>
+                    </li>
+                    <li class="nav-item col-2 p-1 text-center">
+                      <a class="nav-link" href="#my-controls" data-toggle="tab" id="userButton">Мои контроли</a>
+                    </li>
+                    <li class="nav-item col-2 p-1 text-center">
+                      <a class="nav-link" href="#my-favorites" data-toggle="tab" id="favoritesButton">Мои избранные</a>
+                    </li>
+                    <div class="col-3"></div>
+                    <li class="nav-item col-3 p-1 text-center">
+                        <div class="input-group">
+                          <input class="form-control" type="search" placeholder="Поиск" aria-label="Search" id="searchString">
+                        </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-tools col-lg-1" style="align-content: center; margin-left: 1.2rem;">
+                  <ul class="nav nav-pills">
+                    <li class="nav-item">
+                      <a data-title="Создать ККД по файлу"
+                        id="modalImportButton"
+                        data-toggle="modal" data-target="#modal-import"
+                        class="nav-link tip-top">
+                        <i class="nav-icon fas fa-folder-plus fa-lg"></i>
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a href="/controls/create" data-title="Создать ККД"
+                        class="nav-link tip-top">
+                        <i class="nav-icon fas fa-plus fa-lg"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="tab-content">
+              <div class="chart tab-pane active" id="teams-controls" style="position: relative;"></div>
+              <div class="chart tab-pane" id="my-controls" style="position: relative;"></div>
+              <div class="chart tab-pane" id="my-favorites" style="position: relative;"></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card" id="controlInfo" style="height: 100%;">
+            </div>
+          </div>
+        </div>
+      <div class="row" id="footer">
+        <div class="col-8">
+          <div class="card">
+            <div class="card-header p-1" style="border: none;">
+              <div class="card-tools col-lg-12" style="float: left;">
+                <ul class="nav nav-pills ml-auto row">
+                  <li class="nav-item col-1 p-1 text-center">
+                    <a class="nav-link" id="prevPage"><i class="fas fa-angle-double-left fa-lg"></i></a>
+                  </li>
+                  <li class="nav-item col-1 p-1 text-center">
+                    <a class="nav-link" id="nextPage"><i class="fas fa-angle-double-right fa-lg"></i></a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+      </div>
+      <div class="modal fade" id="modal-import">
+        <div class="modal-dialog" style="min-width: 60vw; max-height: 95vh; display: flex; flex-direction: column;">
+            <div class="modal-content" style="max-height: 95vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h4 class="modal-title">Создание контролей по файлу</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="custom-file" style="width: 100%;">
+                        <input type="file" id="xlsxFile" class="custom-file-input" accept=".xlsx">
+                        <label class="custom-file-label" for="xlsxFile">Добавить xlsx</label>
+                    </div>
+                    <div class="row mt-2 mb-2"></div>
+                    <div class="card card-success">
+                      <div class="card-header bg-primary">
+                          <h3 class="card-title">Примечания</h3>
+                      </div>
+                      <div class="card-body">
+                          Файл должен соответствовать расширению xlsx.
+                          <br>Шаблон файла ниже. На листе "comments" описание полей.
+                          <br>После обработки файла для отображения созданных контролей на главной странице необходимо ее перезагрузить.
+                          <br>
+                          <br><a class="btn btn-block btn-outline-primary" 
+                            style="max-width: 30%;" href="static/template.xlsx" download>Шаблон</a>
+                      </div>
+                    </div>
+                    <div class="card card-success">
+                        <div class="card-header bg-primary">
+                            <h3 class="card-title">Результат обработки</h3>
+                        </div>
+                        <div class="card-body">
+                            <table id="import-result" class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Индекс</th>
+                                    <th>Наименование контроля</th>
+                                    <th>Статус</th>
+                                    <th style="min-width: 10vw;">Ошибка</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Выход</button>
+                    <button type="button" class="btn btn-outline-primary" id="import-xlsx-button">Отправить</button>
+                </div>
+            </div>
+          <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+      <div class="modal fade" id="modal-loading">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+    </section>
+  </div><!-- /.container-fluid -->
+    <!-- /.content -->
+	<!-- Main content -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script type="text/javascript">
+  window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables -->
+<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+<!-- ChartJS -->
+<script src="/static/assets/node_modules/chart.js/dist/Chart.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<script src="/static/assets/node_modules/xlsx/dist/xlsx.full.min.js"></script>
+<script src="/static/assets/js/views/main/main.js"></script>
+<script src="/static/assets/js/views/main/controls.js"></script>
+<script src="/static/assets/js/views/controls/importXlsx.js"></script>
+
+{% endblock javascripts %}

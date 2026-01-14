@@ -1,0 +1,53 @@
+{% extends "layouts/base-fullscreen.html" %}
+
+{% block title %} Error 404 {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} login-page {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- icheck bootstrap -->
+<link rel="stylesheet" href="/static/assets/node_modules/icheck-bootstrap/icheck-bootstrap.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="login-box">
+
+    <!-- /.login-logo -->
+    <div class="card">
+
+      <div class="card-body login-card-body">
+        <div class="image text-center">
+          <img src="/static/assets/img/red-cross.png" class="img-circle elevation-2" alt="User Image" width="100" height="100">
+        </div>
+        <h5 class="login-box-msg">
+          Для продолжения работы необходимо вступить в команду
+        </h5>
+        <p class="login-box-msg">
+          <input type="button" onclick="history.back();" value="Назад" class="btn btn-primary text-center"/>
+        </p>
+      </div>
+      <!-- /.login-card-body -->
+    </div>
+
+  </div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock javascripts %}

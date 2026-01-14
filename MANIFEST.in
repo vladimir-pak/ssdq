@@ -1,0 +1,3 @@
+recursive-include ssdq/app/templates *
+recursive-include ssdq/app/static *
+recursive-include ssdq/migrations *

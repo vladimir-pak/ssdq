@@ -1,0 +1,106 @@
+{% extends "layouts/base-fullscreen.html" %}
+
+{% block title %} Login {% endblock %} 
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} login-page {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- icheck bootstrap -->
+<link rel="stylesheet" href="/static/assets/node_modules/icheck-bootstrap/icheck-bootstrap.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+  <div class="login-box">
+
+    <div class="login-logo">
+       <a href="/" class="brand-link">
+      <img src="/static/assets/img/dq_logo_purple.png" alt="AdminLTE Logo" width="150" height="150" style="margin-left: 8%"> </a>
+        <a target="_blank" rel="noopener noreferrer" 
+                href="https://appseed.us/admin-dashboards/flask-dashboard-adminlte"><b>Качество данных</b> </a>
+    </div>
+    <p class="login-box-msg">
+      {% if msg %}
+          {{ msg | safe }}
+      {% else %}
+          Add your credentials
+      {% endif %}
+    </p>
+
+    <!-- /.login-logo -->
+    <form method="post" action="">
+
+      {{ form.hidden_tag() }}
+
+      <div class="input-group mb-3">
+        {{ form.username(placeholder="Логин", class="form-control") }}
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-envelope"></span>
+          </div>
+        </div>
+      </div>
+      <div class="input-group mb-3">
+        {{ form.password(placeholder="Пароль", class="form-control", type="password") }}
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-lock"></span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-8">
+          <div class="icheck-primary">
+            <input type="checkbox" id="remember">
+            <label for="remember">
+              Запомнить меня
+            </label>
+          </div>
+        </div>
+        <!-- /.col -->
+        <div class="col-4">
+          <button type="submit" name="login" class="btn btn-primary btn-block">Войти</button>
+        </div>
+        <!-- /.col -->
+      </div>
+    </form>
+    <br /><br />
+
+        <div class="text-center">
+            <a href="/register" class="text-center">Зарегистрироваться</a>
+            <br />
+            <br />
+            
+        </div>
+    <div>  
+      <!-- <a href="/private"
+        <button type="submit" name="login" class="btn-purple" style="float:left; width: 70%; height:50%; margin-left: 15%">
+          <img src="/static/assets/img/kc.png" alt="keycloak logo"  style="float:left; padding: -50px"  width="40" height="40">
+          <p style="color:white; margin-top:2%;margin-bottom:2%; margin-right:13%; font-size:1.2em">
+              Вход
+          </p>
+        </button>
+        </a> -->
+  </div>
+      <!-- /.login-card-body -->
+
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock javascripts %}

@@ -1,0 +1,33 @@
+{
+    "name": "ssdq-front",
+    "version": "1.0.0",
+    "description": "Self-Service Data Quality",
+    "keywords": [
+        "css",
+        "sass",
+        "gulp",
+        "web"
+    ],
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "^5.15.4",
+        "@sweetalert2/theme-bootstrap-4": "^4.0.5",
+        "@ttskch/select2-bootstrap4-theme": "^1.5.2",
+        "bootstrap": "^4.6.0",
+        "bootstrap4-duallistbox": "^4.0.2",
+        "chart.js": "^2.9.4",
+        "datatables.net": "^2.0.1",
+        "datatables.net-autofill-bs4": "^2.3.9",
+        "datatables.net-bs4": "^2.0.1",
+        "datatables.net-buttons": "3.1.2",
+        "datatables.net-responsive-bs4": "^3.0.3",
+        "icheck-bootstrap": "^3.0.1",
+        "inputmask": "^5.0.6",
+        "jquery": "^3.6.0",
+        "jsgrid": "^1.5.3",
+        "jszip": "^3.7.1",
+        "moment": "^2.29.1",
+        "pdfmake": "^0.2.2",
+        "select2": "^4.0.13",
+        "sweetalert2": "10.16.9"
+    }
+}

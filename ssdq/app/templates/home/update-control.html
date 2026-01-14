@@ -1,0 +1,919 @@
+{% extends "layouts/base.html" %} {% block title %} Редактирование контроля {% endblock %}
+<!-- Element injected in the BODY element -->{% block body_class %} {% endblock body_class %}
+<!-- Specific Page CSS goes HERE  -->{% block stylesheets %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- iCheck for checkboxes and radio inputs -->
+<link rel="stylesheet" href="/static/assets/node_modules/icheck-bootstrap/icheck-bootstrap.min.css">
+<!-- Select2 -->
+<link rel="stylesheet" href="/static/assets/node_modules/select2/dist/css/select2.css">
+<!-- Bootstrap4 Duallistbox -->
+<link rel="stylesheet" href="/static/assets/node_modules/bootstrap4-duallistbox/dist/bootstrap-duallistbox.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/progressbar.css">
+<link rel="stylesheet" href="/static/assets/css/1.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+
+{% endblock stylesheets %} {% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <!-- /.container-fluid -->
+    </section>
+
+    <!------------------------------------------------------------------------------------------------------------------------------------>
+    <div class="progresswrapper">
+        <ol class="ProgressBar">
+            <li class="ProgressBar-step is-current">
+                <svg class="ProgressBar-icon">
+                    <use xlink:href="#checkmark-bold"/>
+                </svg>
+                <span class="ProgressBar-stepLabel">Карточка контроля</span>
+            </li>
+            <li class="ProgressBar-step">
+                <svg class="ProgressBar-icon">
+                    <use xlink:href="#checkmark-bold"/>
+                </svg>
+                <span class="ProgressBar-stepLabel">Параметры DAG</span>
+            </li>
+        </ol>
+    </div>
+
+    <div class="t-Body-contentInner">
+        <div class="container" id="parent">
+            <div>
+                <form method="post">
+                    <div id="pcard" style="display:flex" class="card card-warning-h">
+                        <div class="card-header">
+                            {% if not request.endpoint.endswith("clone_control") %}
+                            <h3 class="card-title">Панель редактирования контроля</h3>
+                            {% else %}
+                            <h3 class="card-title">Панель клонирования контроля</h3>
+                            {% endif %}
+
+                            {% if not request.endpoint.endswith("clone_control") %}
+                            <a type="button" onclick="deleteSpec()" style="float:right; color:black">Удалить
+                                <!-- <h3 class="card-title" style="float:right; color:black">Удалить</h3> -->
+                            </a>
+                            {% endif %}
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <div id='print_area'>
+                                <div class='rpt-main'>
+                                    <div class='rpt-header'>
+                                        <br>
+                                        <div class='rpt-content'>
+                                            <h3 style='color: #5e9ca0; text-align: center;'>
+                                                <span style='color:#000000;'>
+                                                    Карточка контроля {% if not request.endpoint.endswith("clone_control") %}{{control.id}}{% endif %}
+                                                </span>
+                                            </h3>
+                                            <h4 style='color: #5e9ca0; text-align: center;'><span
+                                                    style='color:#000000;'></span></h4>
+                                            <h5 style='color: #5e9ca0; text-align: left;'><span style='color:#000000;'>Термины</span>
+                                            </h5>
+                                            <table class="table table-bordered">
+                                                <tbody>
+                                                <tr>
+                                                    <th>Термин</th>
+                                                    <th>Определение</th>
+                                                </tr>
+                                                <tr>
+                                                    <td>КД</td>
+                                                    <td>Качество Данных</td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            <p></p>
+                                            <p></p>
+                                            <h5 style='color: #5e9ca0; text-align: left;'>
+                                                <span style='color:#000000;'>Описание контроля качества данных</span>
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label>Наименование контроля</label>
+                                                        <input type="text" class="form-control is-valid"
+                                                               id="control_name"
+                                                               data-handle-change="dq_control_sdim"
+                                                               value="{{control.name}}"
+                                                               name="control_name" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label>Статус контроля</label>
+                                                        <select class="form-control" name="status_id"
+                                                                data-handle-change="dq_control_sdim"
+                                                                id="status_id" required>
+                                                            {% if request.endpoint.endswith('clone') %}
+                                                                {% for status in statuses %}
+                                                                    {% if status["name"] == "DEVELOPMENT" %} 
+                                                                    <option value="{{ status['id'] }}" selected>{{ status['display_name'] }}</option>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            {% else %}
+                                                                {% for status in statuses %}
+                                                                    <option value="{{ status['id'] }}" {% if status['id'] == control.status_id %} selected {% endif %}>{{ status['display_name']}}</option>
+                                                                {% endfor %}
+                                                            {% endif %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label>Уровень критичности контроля</label>
+                                                        <div class="form-group">
+                                                            <select class="form-control" name="critical_level"
+                                                                data-handle-change="dq_control_sdim">
+                                                                {% for cl in critical_level %}
+                                                                    <option value="{{ cl.name }}" 
+                                                                        {% if control.critical_level == cl.name %} selected {% endif %}>{{ cl.value }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="control_type">Тип контроля</label>
+                                                        <div id="control_type">
+                                                            <select class="form-control"
+                                                                    style="width: 100%;" id="control_type_id"
+                                                                    data-handle-change="dq_control_sdim"
+                                                                    name="control_type_id">
+                                                                    {% for ct in control_types %}
+                                                                        <option value="{{ct.id}}" 
+                                                                            {% if ct.id == control.control_type_id %} selected {% endif %}>{{ct.name}}</option>
+                                                                    {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label for="team">Команда</label>
+                                                        <div id="team">
+                                                            <select class="form-control"
+                                                                    data-handle-change="dq_control_sdim"
+                                                                    name="team_id" id="team_id">
+                                                                {% for team in teams %}
+                                                                    <option value="{{team.id}}"
+                                                                    {% if control.team_id == team.id %} selected {% endif %}>
+                                                                    {{team.display_name}}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="subject_area">Предметная область контроля</label>
+                                                        <div id="subject_area">
+                                                            <select class="form-control"
+                                                                    style="width: 100%;" id="subject_area_id"
+                                                                    data-handle-change="dq_control_sdim"
+                                                                    name="subject_area_id">
+                                                                    <option value="" selected disabled></option>
+                                                                    {% for team in teams %}
+                                                                    <optgroup id="subject_area_{{team.id}}" label="Команда: {{team.display_name}}">
+                                                                        {% for sa in subject_area %}
+                                                                            {% if sa.team_id == team.id %}
+                                                                            <option value={{sa.id}} {% if control.subject_area_id==sa.id %} selected {% endif %}>
+                                                                                {{sa.name}}
+                                                                            </option>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                    </optgroup>
+                                                                    {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="officer">Ответственные</label>
+                                                        <div class="div-is-valid" id="owner_name">
+                                                            <div class="select2-primary">
+                                                                <select multiple="multiple" class="form-control"
+                                                                        data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                        name="owner_id" id="owner_id"
+                                                                        data-handle-change="dq_control_owner_stat">
+                                                                    {% for owner in owners %}
+                                                                        <option value="{{owner.id}}" selected>
+                                                                            {{ owner.name }} ({{ owner.email }})
+                                                                        </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                            </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="tag_id">Теги контроля</label>
+                                                        <div class="select2-primary">
+                                                            <select multiple="multiple" class="form-control"
+                                                                    data-handle-change="dq_control_tags_stat"
+                                                                    data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                    name="tag_id" id="tag_id">
+                                                                {% for tag in tags %}
+                                                                    <option value="{{ tag.id }}" selected>
+                                                                        {{ tag.name }}
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p></p>
+
+                                            <h5 style='color: #5e9ca0; text-align: left;'><span style='color:#000000;'>Характеристики</span></h5>
+                                            <table class="table table-bordered" style="border-collapse:collapse">
+                                                <tbody>
+                                                <tr>
+                                                    <th>Характеристика индикатора</th>
+                                                    <th>Описание</th>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Кем создан</b></td>
+                                                    <td style="padding: 0px;">
+                                                        <input type="text" style="height: 50px;" class="form-control"
+                                                               id="created_by" name="created_by" value="{{ created_user.name }} ({{ created_user.email }})"
+                                                               disabled>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Покрываемый сегмент</b></td>
+                                                    <td style="padding: 0px;">
+                                                        <select class="form-control is-valid" name="segment_id"
+                                                                style="height: 50px;"
+                                                                id="segment_id"
+                                                                data-handle-change="dq_control_sdim"
+                                                                required>
+                                                            {% for team in teams %}
+                                                            <optgroup id="segment_{{team.id}}" label="Команда: {{team.display_name}}">
+                                                                {% for segment in segments %}
+                                                                {% if segment.team_id == team.id %}
+                                                                    <option value={{segment.id}} {% if control.segment_id==segment.id %} selected {% endif %}>
+                                                                        {{segment.name}}
+                                                                    </option>
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </optgroup>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Система-источник данных</b></td>
+                                                    <td style="padding: 0px;">
+                                                        <select class="form-control is-valid" name="source_id" id="source_id"
+                                                                style="height: 50px"
+                                                                data-handle-change="dq_control_sdim" required>
+                                                            {% for source in sources %}
+                                                            <option value="{{source.id}}" {% if control.source_id == source.id %}
+                                                                    selected {% endif %}>
+                                                                {{source.description}}
+                                                            </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Условие отбора данных для проверки</b></td>
+                                                    <td style="padding: 0px;">
+                                                        <textarea class="form-control is-valid" rows="3"
+                                                                  name="conditions" id="conditions"
+                                                                  data-handle-change="dq_control_sdim"
+                                                                  required>{{ control.conditions }}</textarea>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>Описание проверки</b></td>
+                                                    <td style="padding: 0px;">
+                                                        <textarea class="form-control is-valid" rows="3"
+                                                            name="description" id="description"
+                                                            data-handle-change="dq_control_sdim"
+                                                            required>{{control.description}}</textarea>
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            <br>
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <label for="object_id">Объекты контроля</label>
+                                                        <div class="div-is-valid" id="object_name">
+                                                            <div class="select2-primary">
+                                                                <select multiple="multiple" class="form-control"
+                                                                        data-handle-change="dq_control_object_stat"
+                                                                        data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                        name="object_id" id="object_id">
+                                                                    {% for object in objects %}
+                                                                        <option value="{{object.id}}" selected>
+                                                                            {{ object.schema }}.{{object.table_name}}
+                                                                        </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <label>Оповещение на почту (указать ФИО)</label>
+                                                        <div class="select2-primary">
+                                                            <select multiple="multiple"
+                                                                    data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                    name="alerting" id="alerting"
+                                                                    data-handle-change="dq_alerting_sdim">
+                                                                {% for au in alerting_users %}
+                                                                    <option value="{{au.id}}" selected>
+                                                                        {{ au.name }} ({{au.email}})
+                                                                    </option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label for="team">Вид почтовой рассылки</label>
+                                                        <select class="form-control" 
+                                                                data-handle-change="dq_control_sdim"
+                                                                name="alerting_type_id" id="alerting_type_id">
+                                                            {% for at in alerting_type %}
+                                                                <option value="{{ at['id'] }}"
+                                                                    {% if control.alerting_type_id == at['id'] %} selected {% endif %}>{{ at['display_name'] }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Вид создаваемого инцидента</label>
+                                                        <select class="form-control" name="jira_mode_id" id="jira_mode_id"
+                                                            data-handle-change="dq_control_sdim">
+                                                            <option value="0">Не создавать инцидент</option>
+                                                            {% for jm in jira_mode %}
+                                                                <option value="{{jm['id']}}"
+                                                                {% if control.jira_mode_id == jm['id'] %} selected {% endif %}>{{jm['display_name']}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label>Ссылка на Wiki</label>
+                                                        <input type="text" class="form-control" placeholder="" 
+                                                            name="wiki" value="{{control.wiki}}"
+                                                            data-handle-change="dq_control_sdim">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <h5 style='text-align: left;'>
+                                                <div class="row">
+                                                    <span style='color:#000000;'>Уровни критичности результата </span>
+                                                    <div class="tltp">
+                                                        <i class="nav-icon fas fa-info-circle fa-xs"></i>
+                                                        <span class="tooltiptext p-2">
+                                                            Уровни критичности:
+                                                            <br>От 0 до нижней границы - низкая
+                                                            <br>От нижней до верхней границы - средняя
+                                                            <br>Свыше верхней границы - высокая
+                                                        </span> 
+                                                    </div>
+                                                </div>
+                                            </h5>
+                                            <div class="row">
+                                                <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label for="threshold_min">Нижняя граница</label>
+                                                        <input class="form-control" style="width: 100%;" 
+                                                            id="threshold_min" name="threshold_min" type="number"
+                                                            data-handle-change="dq_control_sdim"
+                                                            value="{{control.threshold_min}}">
+                                                    </div>
+                                                </div>
+                                            <div class="col-sm-6">
+                                                    <div class="form-group">
+                                                        <label for="threshold_max">Верхняя граница</label>
+                                                        <input class="form-control" style="width: 100%;" 
+                                                            id="threshold_max" name="threshold_max" type="number"
+                                                            data-handle-change="dq_control_sdim"
+                                                            value="{{control.threshold_max}}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row"><br></div>
+                            <div class="row justify-content-between p-2">
+                                {% for status in statuses %}
+                                    {% if status["name"] == "ACTUALIZATION" and control.status_id == status["id"] %}
+                                    <div class="col-6"></div>
+                                    <div class="col-6">
+                                        <button type="button" style="float: right;" onclick="actualize();"
+                                                class="btn btn-block btn-outline-primary">Актуализировать без изменений
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="row justify-content-between p-2">
+                                <div class="col-3">
+                                    <button type="button"
+                                            class="btn btn-block btn-outline-primary"
+                                            onclick="location.href='/main';">
+                                        Выход
+                                    </button>
+                                </div>
+                                <div class="col-3">
+                                </div>
+                                <div class="col-3">
+                                    <button id="saveSpecButton" type="button"
+                                            class="btn btn-block btn-outline-primary"
+                                            onclick="saveSpec(true);">
+                                        Сохранить
+                                    </button>
+                                </div>
+                                <div class="col-3">
+                                    <button type="button" onclick="checkFill(1)"
+                                            class="btn btn-block btn-outline-primary">Далее</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="pdag" style="display:flex" class="card card-warning-h">
+                        <div class="card-header">
+                            <h3 class="card-title">Параметры DAG</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="card">
+                                <ul class="nav nav-pills" style="justify-content: space-between;" id="panels">
+                                    <li class="nav-item col-4 text-center">
+                                    <a class="nav-link {% if dag_type == 'SIMPLE' %} active {% endif %}" href="#simple-control" data-toggle="tab">Простой контроль</a>
+                                    </li>
+                                    <li class="nav-item col-4 text-center">
+                                    <a class="nav-link {% if dag_type == 'CROSSDATABASE' %} active {% endif %}" href="#crossdb-control" data-toggle="tab">Кросс-системный контроль</a>
+                                    </li>
+                                    <li class="nav-item col-4 text-center">
+                                    <a class="nav-link {% if dag_type == 'PATTERN' %} active {% endif %}" href="#pattern-control" data-toggle="tab">Шаблонизированный контроль</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="row">
+                                <div class="tab-content col-lg-12">
+                                    <div class="chart tab-pane {% if dag_type == 'SIMPLE' %} active {% endif %}" id="simple-control" style="position: relative;">
+                                        <div id="input-simple">
+                                            <div class="form-group" id="div_source">
+                                                <label>Источник
+                                                    <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                            data-handle-change="dq_dag_sdim"
+                                                            id="source" name="source">
+                                                        {% for source in sources %}
+                                                        <option value="{{ source.id }}"
+                                                        {% if source.id|string == dag.source|string %}selected{% endif %}>{{source.description }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
+                                                <div id="sql" style="display:flex; width: 100%;" class="input-group mb-3">
+                                                    <textarea class="form-control {{ 'is-valid' if dag.source_query is not none else 'is-invalid' }}" rows=15
+                                                        data-handle-change="dq_dag_sdim"
+                                                        id="sql_query" name="sql_query">{{ dag.sql if dag.sql is not none}}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart tab-pane {% if dag_type == 'CROSSDATABASE' %} active {% endif %}" id="crossdb-control" style="position: relative;">
+                                        <div id="input-crossdb">
+                                            <div id="input-crossdb-sql">
+                                                {% if dag_type == 'CROSSDATABASE' %}
+                                                {% for cur in dag.params %}
+                                                <div class="input-group">
+                                                    <div class="form-group">
+                                                        <label>Источник
+                                                            <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                                    data-handle-change="dq_dag_sdim"
+                                                                    name="input-source">
+                                                                {% for source in sources %}
+                                                                <option value="{{ source.name }}" 
+                                                                {% if cur.source == source.name %}selected{% endif %}>{{source.description }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </label>
+                                                        <label style="position: absolute; right: 0;">Наименование датафрейма
+                                                            <input type="text" class="form-control is-valid mt-2" style="width: 20vw;"
+                                                                    placeholder="Название датафрейма в главном запросе"
+                                                                    data-handle-change="dq_dag_sdim"
+                                                                    name="input-src-name"
+                                                                    value="{{ cur.source_name }}">
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-group" style="width: 100%;">
+                                                        <button type="button" class="btn btn-block btn-default js-toggle-btn" 
+                                                            data-target="div-input-sql">Запрос</button>
+                                                        <div class="mb-3" style="width: 100%;" name="div-input-sql">
+                                                            <textarea class="form-control is-valid" rows="10"
+                                                                data-handle-change="dq_dag_sdim"
+                                                                name="input-sql">{{ cur.sql }}</textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                                {% else %}
+                                                <div class="input-group">
+                                                    <div class="form-group">
+                                                        <label>Источник
+                                                            <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                                    data-handle-change="dq_dag_sdim"
+                                                                    name="input-source">
+                                                                {% for source in sources %}
+                                                                <option value="{{ source.name }}">{{source.description }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </label>
+                                                        <label style="position: absolute; right: 0;">Наименование датафрейма
+                                                            <input type="text" class="form-control is-invalid mt-2" style="width: 20vw;"
+                                                                    placeholder="Название датафрейма в главном запросе"
+                                                                    data-handle-change="dq_dag_sdim"
+                                                                    name="input-src-name">
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-group" style="width: 100%;">
+                                                        <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
+                                                        <div class="mb-3" style="width: 100%;">
+                                                            <textarea class="form-control is-invalid" rows="10"
+                                                                data-handle-change="dq_dag_sdim"
+                                                                name="input-sql"></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-group">
+                                                <div class="btn-group" style="width: 100%;">
+                                                    <button type="button" class="btn btn-default" onclick="addParam('input-crossdb-sql')">Добавить источник</button>
+                                                    <button type="button" class="btn btn-default" onclick="removeParam('input-crossdb-sql')">Удалить источник</button>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <button type="button" class="btn btn-block btn-default js-toggle-btn">Главный запрос</button>
+                                                <div style="display:flex; width: 100%;" class="input-group mb-3">
+                                                    <textarea class="form-control {% if dag_type == 'CROSSDATABASE' %}is-valid{% else %}is-invalid{% endif %}" rows="15"
+                                                        data-handle-change="dq_dag_sdim"
+                                                        id="main_query" name="main_query">{{ dag.sql if dag_type == 'CROSSDATABASE' }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chart tab-pane {% if dag_type == 'PATTERN' %} active {% endif %}" id="pattern-control" style="position: relative;">
+                                        <div id="input-pattern">
+                                            <div class="form-group row">
+                                                <div class="col-4">
+                                                    <label>Источник
+                                                        <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                                id="source_pattern" name="source_pattern"
+                                                                data-handle-change="dq_dag_sdim">
+                                                            {% for source in sources %}
+                                                            <option value="{{ source.id }}" {% if dag.source == source.id %}selected{% endif %}>{{source.description }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </label>
+                                                </div>
+                                                <label style="position: absolute; right: 0;">SQL шаблон
+                                                    <br><select 
+                                                            style="width: 20vw;"
+                                                            data-handle-change="dq_dag_sdim"
+                                                            name="pattern_id" id="pattern_id">
+                                                            <option value="{{ sql_pattern.id }}" selected>{{ sql_pattern.name if sql_pattern }}</option>
+                                                        </select>
+                                                </label>
+                                                </div>
+                                            <div class="form-group">
+                                                <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
+                                                <div style="display:flex;" class="input-group mb-3">
+                                                    <textarea class="form-control" rows=15
+                                                        data-handle-change="dq_dag_sdim"
+                                                        id="sql_pattern" name="sql_pattern" disabled>{{ sql_pattern.sql if sql_pattern }}</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
+                                                <div class="col-lg-6 mt-2"><label class="ml-2">Наименование параметра (англ)</label></div>
+                                                <div class="col-lg-6 mt-2"><label>Значение параметра</label></div>
+                                                <div class="col-lg-12 mb-3" id="input-parameters">
+                                                    {% if dag_type == 'PATTERN' %}
+                                                    {% for key, val in sql_pattern.params.items() %}
+                                                    <div class="input-group">
+                                                        <div class="col-lg-6">
+                                                            <input type="text" class="form-control mt-2" name="param-keys" 
+                                                                data-handle-change="dq_dag_sdim"
+                                                                value="{{ key }}" disabled>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <input type="text" 
+                                                                class="form-control mt-2 {% if dag.params[key] %} is-valid {% else %} is-invalid {% endif %}" 
+                                                                name="param-values" 
+                                                                data-handle-change="dq_dag_sdim"
+                                                                value="{{ dag.params[key]|default('') }}">
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                    {% else %}
+                                                    <div class="input-group">
+                                                        <div class="col-lg-6">
+                                                            <input type="text" class="form-control mt-2" name="param-keys" disabled>
+                                                        </div>
+                                                        <div class="col-lg-6">
+                                                            <input type="text" class="form-control mt-2" name="param-values" disabled>
+                                                        </div>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <!-- radio -->
+                                <div class="form-group">
+                                    <div class="custom-control custom-radio">
+                                        <input class="custom-control-input" type="radio" id="customRadio1" checked
+                                            name="customRadio">
+                                        <label for="customRadio1" class="custom-control-label">Запуск по расписанию</label>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group col-md-4">
+                                            <label>запуск:</label>
+                                            <select class="form-control" onchange="selectSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    id="select_sch" name="select_sch">
+                                                <option value="none" {% if schedule.value=='none' %} selected {% endif %}>
+                                                    не запускать
+                                                </option>
+                                                <option value="minutes" {% if schedule.value=='minutes' %} selected {% endif %}>
+                                                    каждые минуты
+                                                </option>
+                                                <option value="hour" {% if schedule.value=='hour' %} selected {% endif %}>
+                                                    каждый час
+                                                </option>
+                                                <option value="day" {% if schedule.value=='day' %} selected {% endif %}>
+                                                    каждый день
+                                                </option>
+                                                <option value="week" {% if schedule.value=='week' %} selected {% endif %}>
+                                                    каждую неделю
+                                                </option>
+                                                <option value="month" {% if schedule.value=='month' %} selected {% endif %}>
+                                                    каждый месяц
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-2" id="minutediv" hidden>
+                                            <label>минуты</label>
+                                            <select class="form-control" id="minute_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="minute_select">
+                                                <option value="5" {% if schedule.minutes=='5' %}selected{% endif %}>05</option>
+                                                <option value="10" {% if schedule.minutes=='10' %}selected{% endif %}>10</option>
+                                                <option value="15" {% if schedule.minutes=='15' %}selected{% endif %}>15</option>
+                                                <option value="20" {% if schedule.minutes=='20' %}selected{% endif %}>20</option>
+                                                <option value="25" {% if schedule.minutes=='25' %}selected{% endif %}>25</option>
+                                                <option value="30" {% if schedule.minutes=='30' %}selected{% endif %}>30</option>
+                                                <option value="35" {% if schedule.minutes=='35' %}selected{% endif %}>35</option>
+                                                <option value="40" {% if schedule.minutes=='40' %}selected{% endif %}>40</option>
+                                                <option value="45" {% if schedule.minutes=='45' %}selected{% endif %}>45</option>
+                                                <option value="50" {% if schedule.minutes=='50' %}selected{% endif %}>50</option>
+                                                <option value="55" {% if schedule.minutes=='55' %}selected{% endif %}>55</option>
+                                            </select>
+                                        </div>
+                                        <div id="hourdiv" class="form-group col-md-2" hidden>
+                                            <label>минуты</label>
+                                            <select class="form-control" id="hour_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="hour_select">
+                                                {% for minute in minutes %}
+                                                <option value="{{minute}}"
+                                                    {% if minute== schedule.minute_in_hour %}selected{% endif %}>
+                                                    {{minute}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-2" id="time_hour_day_div" hidden>
+                                            <label>часы</label>
+                                            <select class="form-control" id="time_hour_day_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="time_hour_day_select">
+                                                {% for hour in hours %}
+                                                <option value="{{hour}}" {% if hour==schedule.hour_in_day %}selected{% endif %}>
+                                                    {{hour}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-2" id="time_minute_day_div" hidden>
+                                            <label>минуты</label>
+                                            <select class="form-control" id="time_minute_day_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="time_minute_day_select">
+                                                {% for minute in minutes %}
+                                                <option value="{{minute}}"
+                                                        {% if minute==schedule.minute_in_day %}selected{% endif %}>
+                                                    {{minute}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div id="time_hour_week_div" class="form-group col-md-2" hidden>
+                                            <label>часы</label>
+                                            <select class="form-control" id="time_hour_week_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="time_hour_week_select">
+                                                {% for hour in hours %}
+                                                <option value="{{hour}}" {% if hour==schedule.hour_in_week %}selected{% endif %}>
+                                                    {{hour}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div id="time_minute_week_div" class="form-group col-md-2" hidden>
+                                            <label>минуты</label>
+                                            <select class="form-control" id="time_minute_week_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="time_minute_week_select">
+                                                {% for minute in minutes %}
+                                                <option value="{{minute}}"
+                                                        {% if minute==schedule.minute_in_week %}selected{% endif %}>
+                                                    {{minute}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div id="day_of_week_div" class="form-group col-md-4" hidden>
+                                            <label>день</label>
+                                            <select class="form-control" id="day_of_week_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="day_of_week_select">
+                                                <option value="1" {% if schedule.day_in_week==1 %}selected{% endif %}>
+                                                    понедельник
+                                                </option>
+                                                <option value="2" {% if schedule.day_in_week==2 %}selected{% endif %}>
+                                                    вторник
+                                                </option>
+                                                <option value="3" {% if schedule.day_in_week==3 %}selected{% endif %}>
+                                                    среда
+                                                </option>
+                                                <option value="4" {% if schedule.day_in_week==4 %}selected{% endif %}>
+                                                    четверг
+                                                </option>
+                                                <option value="5" {% if schedule.day_in_week==5 %}selected{% endif %}>
+                                                    пятница
+                                                </option>
+                                                <option value="6" {% if schedule.day_in_week==6 %}selected{% endif %}>
+                                                    суббота
+                                                </option>
+                                                <option value="7" {% if schedule.day_in_week==0 %}selected{% endif %}>
+                                                    воскресенье
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div id="time_hour_month_div" class="form-group col-md-2" hidden>
+                                            <label>часы</label>
+                                            <select class="form-control" id="time_hour_month_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="time_hour_month_select">
+                                                {% for hour in hours %}
+                                                <option value="{{hour}}" {% if hour==schedule.hour_in_month %}selected{% endif %}>
+                                                    {{hour}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div id="time_minute_month_div" class="form-group col-md-2" hidden>
+                                            <label>минуты</label>
+                                            <select class="form-control" id="time_minute_month_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="time_minute_month_select">
+                                                {% for minute in minutes %}
+                                                <option value="{{minute}}"
+                                                        {% if minute==schedule.minute_in_month %}selected{% endif %}>
+                                                    {{minute}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div id="day_of_month_div" class="form-group col-md-4" hidden>
+                                            <label>день месяца</label>
+                                            <select class="form-control" id="day_of_month_select" onchange="printSch();"
+                                                    data-handle-change="dq_dag_sdim"
+                                                    name="day_of_month_select">
+                                                {% for day in days_in_month %}
+                                                <option value="{{day}}" {% if day==schedule.day_in_month %}selected{% endif %}>
+                                                    {{day}}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="descForSch" class="form-group"></div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="custom-control custom-checkbox">
+                                    <input class="custom-control-input" type="checkbox" id="limit"
+                                            {% if dag.limit %}checked{% endif %}
+                                            data-handle-change="dq_dag_sdim"
+                                            name="limit">
+                                    <label for="limit" class="custom-control-label">Ограничивать количество записей в результате</label>
+                                </div>
+                            </div>
+                            <br>
+                            <br>
+                            <div class="row justify-content-between p-2">
+                                <div class="col-3">
+                                    <button type="button" onclick="pageToggle()"
+                                        class="btn btn-block btn-outline-primary">Назад</button>
+                                </div>
+                                <div class="col-3">
+                                    <button type="button"
+                                            class="btn btn-block btn-outline-primary"
+                                            onclick="saveSpec(false);">
+                                        Сохранить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="div_load" hidden>
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                </div>
+            </div>
+<!-- /.card-body -->
+        </div>
+    </div>
+</div>
+
+<!-- /.content-wrapper -->{% endblock content %}
+<!-- Specific Page JS goes HERE  -->{% block javascripts %}
+<script type="text/javascript">
+    var random = Math.round(Math.random());
+    window.controlId = {% if not request.endpoint.endswith("clone_control") %} {{ control.id }} {% else %} 0 {% endif %};
+    window.src_list = [{% for source in sources %} { id: "{{source.id}}", name: "{{source.name}}", description: "{{source.description}}" }, {% endfor %}];
+    window.isClone = {% if is_clone %} true {% else %} false {% endif %};
+
+    window.prevStatus = {{control.status_id}};
+
+    window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<script src="/static/assets/js/progressbar.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 -->
+<script src="/static/assets/node_modules/select2/dist/js/select2.full.js"></script>
+<!-- Bootstrap4 Duallistbox -->
+<script src="/static/assets/node_modules/bootstrap4-duallistbox/dist/jquery.bootstrap-duallistbox.min.js"></script>
+<!-- InputMask -->
+<script src="/static/assets/node_modules/moment/min/moment.min.js"></script>
+<script src="/static/assets/node_modules/inputmask/dist/jquery.inputmask.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<script src="/static/assets/js/views/controls/handleChanges.js"></script>
+<script src="/static/assets/js/views/controls/validation.js"></script>
+<script src="/static/assets/js/views/controls/controls.js"></script>
+<script src="/static/assets/js/views/controls/create_control.js"></script>
+<script src="/static/assets/js/views/controls/utils.js"></script>
+
+{% endblock javascripts %}

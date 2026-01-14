@@ -1,0 +1,74 @@
+{% extends "layouts/base.html" %} {% block title %} Справочники {% endblock %}
+<!-- Element injected in the BODY element -->{% block body_class %} {% endblock body_class %}
+<!-- Specific Page CSS goes HERE  -->{% block stylesheets %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+{% endblock stylesheets %} {% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+	<!-- Content Header (Page header) -->
+	<!-- Main content -->
+	<section class="content">
+		<div class="container-fluid">
+			<div class="row mb-2">
+				<div class="col-sm-6">
+				</div>
+			</div>
+		</div>
+		<!-- /.container-fluid -->
+	</section>
+
+	<!------------------------------------------------------------------------------------------------------------------------------------>
+	<div>
+		<div class="t-Body-contentInner">
+			<div class="container" id="parent">
+				<div>
+					<div class="card card-success">
+						<div class="card-header bg-primary">
+							<h3 class="card-title">Справочники</h3>
+						</div>
+						<!-- /.card-header -->
+						<div class="card-body">
+							{% if current_user.admin or current_user.role_name == "AdminSec" %}
+							<button type="button" class="btn btn-block btn-default"
+								onclick='location.href="/admin/users"'>Пользователи</button>
+							<!-- <button type="button" class="btn btn-block btn-default"
+								onclick='location.href="/admin/adm-paths"'>Пути выгрузки</button> -->
+							<!-- <button type="button" class="btn btn-block btn-default" id="teams"
+								onclick='location.href="/admin/adm-teams"'>Команды</button> -->
+							<button type="button" class="btn btn-block btn-default" id="sources"
+								onclick='location.href="/admin/sources"'>Источники данных</button>
+							<button type="button" class="btn btn-block btn-default" id="controltype"
+								onclick='location.href="/admin/teams"'>Все команды</button>
+							{% endif %}
+							<button type="button" class="btn btn-block btn-default"
+								onclick='location.href="/admin/objects"'>Объекты</button>
+								<button type="button" class="btn btn-block btn-default" id="controltype"
+								onclick='location.href="/admin/control-types"'>Типы контролей</button>
+							<button type="button" class="btn btn-block btn-default" id="segments"
+								onclick='location.href="/admin/segments"'>Сегменты</button>
+							<button type="button" class="btn btn-block btn-default" id="subjectArea"
+								onclick='location.href="/admin/subject-area"'>Предметные области</button>
+							<button type="button" class="btn btn-block btn-default" id="errorReason"
+								onclick='location.href="/admin/error-reason"'>Причины ошибок</button>
+							<button type="button" class="btn btn-block btn-default" id="teams"
+								onclick='location.href="/admin/teams/{{ current_user.team_id }}"'> Моя команда</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+<!-- /.content-wrapper -->{% endblock content %}
+<!-- Specific Page JS goes HERE  -->{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock javascripts %}

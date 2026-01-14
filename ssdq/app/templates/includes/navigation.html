@@ -1,0 +1,119 @@
+<!-- Navbar -->
+  <link rel="stylesheet" href="/static/assets/css/navbar_custom.css">
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+    <!-- Left navbar links -->
+    <a href="/" class="brand-link" style="display: flex; position: absolute; justify-content: center;">
+      <img src="/static/assets/gpb-logo.png" style="width: 200px;">
+    </a>
+    <!-- SidebarSearch Form -->
+    <div class="form-inline" hidden>
+      <div class="input-group" data-widget="sidebar-search">
+        <input class="form-control form-control-sidebar" type="search" placeholder="Поиск" aria-label="Search">
+        <div class="input-group-append">
+          <button class="btn btn-sidebar">
+            <i class="fas fa-search fa-fw"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <ul class="navbar-nav mx-auto" style="padding-left: 5%;">
+      <li class="nav-item">
+        <a href="/main" data-title="Обзор"
+          class="nav-link tip {% if 'main' in segment %} active {% endif %}">
+          <i class="nav-icon fas fa-chart-pie fa-lg"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/monitoring/all" data-title="Реестр контролей"
+          class="nav-link tip {% if 'all' in segment %} active {% endif %}">
+          <i class="nav-icon fas fa-tachometer-alt fa-lg"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/admin" data-title="Справочники"
+          class="nav-link tip {% if segment in 
+          ['admin', 'users', 'objects', 'teams', 'sources', 'segments', 'control-types', 'error-reason', 'subject-area'] %} active {% endif %}">
+          <i class="nav-icon fas fa-th fa-lg"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/controls" data-title="Карточка контроля"
+          class="nav-link tip {% if 'controls' in segment %} active {% endif %}">
+          <i class="nav-icon fas fa-image fa-lg"></i>
+        </a>
+      </li>
+      {% if current_user.admin %}
+      <li class="nav-item">
+        <a href="/config" data-title="Системные настройки" class="nav-link tip {% if 'config' in segment %} active {% endif %}">
+          <i class="fas fa-cogs fa-lg"></i>
+        </a>
+      </li>
+      {% endif %}
+      <li class="nav-item">
+        <a href="/superset" data-title="Superset" class="nav-link tip">
+          <i class="fas fa-chart-line fa-lg"></i>
+        </a>
+      </li>
+      {% if current_user.team_eng_name in streamlit_acceptance or current_user.admin %}
+      <li class="nav-item">
+        <a href="/streamlit" data-title="Streamlit" class="nav-link tip">
+          <i class="fas fa-chart-bar fa-lg"></i>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+
+    <ul class="navbar-nav">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink"
+          aria-haspopup="true" aria-expanded="false" role="button" onclick="toggleDropdown(event)">
+          <i class="nav-icon fas fa-user fa-lg"></i>
+        </a>
+        <ul class="dropdown-menu transparent" style="left: auto; right: 0%; width: 250px;" aria-labelledby="navbarDropdownMenuLink" id="dropdownMenu">
+          <li class="dropdown-item">
+            <label>Пользователь:</label>
+            <a type="button" class="btn btn-block btn-default" data-title="Личный кабинет"
+							style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"	href="/user">{{current_user.name}}</a>
+            <!-- <a href="/user">{{current_user.name}} ({{current_user.login}})</a> -->
+          </li>
+          <li class="dropdown-item">
+            <div class="form-group">
+              <label>Команда:</label>
+              <select class="form-control" id="user_teams">
+                  <option value="0">{{ current_user.team_name }}</option>
+              </select>
+            </div>
+          </li>
+          <li class="dropdown-item">
+            <label>Сессия истекает в:</label>
+            <input class="btn btn-block btn-default" data-title="Сессия" readonly
+              id="sessionLifetime" value="{{session['lifetime']}}"
+							style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <!-- <a href="/user">{{current_user.name}} ({{current_user.login}})</a> -->
+          </li>
+          <li class="dropdown-item">
+            <a href="/oidc/logout" data-title="Выход" class="nav-link tip p-1">
+              <i class="fas fa-sign-out-alt fa-lg "></i>Выход
+            </a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+  </nav>
+  <script>
+    function toggleSubmenu(event) {
+      event.preventDefault();
+      const parent = event.target.closest('.nav-item');
+      parent.classList.toggle('submenu-open');
+    };
+
+    function toggleDropdown(event) {
+      event.preventDefault();
+      $('#dropdownMenu').toggle();
+    };
+  </script>
+  <script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+  <script src="/static/assets/js/sessionTimer.js"></script>
+  <!-- /.navbar -->

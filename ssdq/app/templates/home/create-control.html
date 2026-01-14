@@ -1,0 +1,722 @@
+{% extends "layouts/base.html" %} {% block title %} Создание контроля {% endblock %}
+<!-- Element injected in the BODY element -->{% block body_class %} {% endblock body_class %}
+<!-- Specific Page CSS goes HERE  -->{% block stylesheets %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- iCheck for checkboxes and radio inputs -->
+<link rel="stylesheet" href="/static/assets/node_modules/icheck-bootstrap/icheck-bootstrap.min.css">
+<!-- Select2 -->
+<link rel="stylesheet" href="/static/assets/node_modules/select2/dist/css/select2.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/progressbar.css">
+<link rel="stylesheet" href="/static/assets/css/1.css">
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+
+{% endblock stylesheets %} {% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <!-- /.container-fluid -->
+    </section>
+
+    <!------------------------------------------------------------------------------------------------------------------------------------>
+    <div class="progresswrapper">
+        <ol class="ProgressBar">
+            <li class="ProgressBar-step is-current">
+                <svg class="ProgressBar-icon">
+                    <use xlink:href="#checkmark-bold"/>
+                </svg>
+                <span class="ProgressBar-stepLabel">Карточка контроля</span>
+            </li>
+            <li class="ProgressBar-step">
+                <svg class="ProgressBar-icon">
+                    <use xlink:href="#checkmark-bold"/>
+                </svg>
+                <span class="ProgressBar-stepLabel">Параметры DAG</span>
+            </li>
+        </ol>
+    </div>
+
+    <div class="t-Body-contentInner">
+        <div class="container" id="parent">
+            <form method="post" id="formId">
+                <div id="pcard" style="display:flex" class="card card-warning-h">
+                    <div class="card-header" style="align-content: center;">
+                        <h3 class="card-title">Панель создания контроля</h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <div id='print_area'>
+                            <div class='rpt-main'>
+                                <div class='rpt-header'>
+                                    <div class='container4'></div>
+
+                                    <div class='rpt-content'>
+                                        <h3 style='color: #5e9ca0; text-align: center;'><span
+                                                style='color:#000000;'>Карточка контроля</span></h3>
+                                        <h4 style='color: #5e9ca0; text-align: center;'><span
+                                                style='color:#000000;'></span></h4>
+                                        <h5 style='color: #5e9ca0; text-align: left;'><span style='color:#000000;'>Термины</span>
+                                        </h5>
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                            <tr>
+                                                <th>Термин</th>
+                                                <th>Определение</th>
+                                            </tr>
+                                            <tr>
+                                                <td>КД</td>
+                                                <td>Качество Данных</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <p></p>
+                                        <h5 style='color: #5e9ca0; text-align: left;'>
+                                            <span style='color:#000000;'>Описание контроля качества данных</span>
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="control_name">Наименование контроля</label>
+                                                    <input type="text" class="form-control is-invalid"
+                                                            id="control_name"
+                                                            name="control_name" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="status_id">Статус контроля</label>
+                                                    <select class="form-control is-valid" name="status_id"
+                                                            id="status_id" required>
+                                                        {% for status in statuses %}
+                                                            {% if status["name"] == "DEVELOPMENT" %} 
+                                                            <option value="{{ status['id'] }}" selected>{{ status['display_name'] }}</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="critical_level">Уровень критичности контроля</label>
+                                                    <div class="form-group">
+                                                        <select class="form-control" name="critical_level">
+                                                            {% for cl in critical_level %}
+                                                                <option value="{{ cl.name }}">{{ cl.value }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="control_type">Тип контроля</label>
+                                                    <div id="control_type">
+                                                        <select class="form-control"
+                                                                style="width: 100%;" id="control_type_id"
+                                                                name="control_type_id"
+                                                                placeholder="Выберите тип контроля">
+                                                                {% for ct in control_types %}
+                                                                    <option value="{{ct.id}}">{{ct.name}}</option>
+                                                                {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="team">Команда</label>
+                                                    <div id="team">
+                                                        <select class="form-control is-valid" id="team_id"
+                                                                name="team_id">
+                                                            {% for team in teams %}
+                                                                <option value="{{team.id}}"
+                                                                {% if current_user.team_id is defined and current_user.team_id == team.id %} selected {% endif %}>
+                                                                {{team.display_name}}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="subject_area">Предметная область контроля</label>
+                                                    <div id="subject_area">
+                                                        <select class="form-control"
+                                                                style="width: 100%;" id="subject_area_id"
+                                                                name="subject_area_id">
+                                                                <option selected disabled></option>
+                                                                {% for team in teams %}
+                                                                <optgroup id="subject_area_{{team.id}}" label="Команда: {{team.display_name}}">
+                                                                    {% for sa in subject_area %}
+                                                                        {% if sa.team_id == team.id %}
+                                                                        <option value={{sa.id}}>{{sa.name}}</option>
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </optgroup>
+                                                                {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <label for="officer">Ответственные</label>
+                                                    <div id="owner_name">
+                                                        <div class="select2-primary div-is-valid">
+                                                            <select multiple="multiple" class="form-control is-valid"
+                                                                    data-dropdown-css-class="select2-primary" style="width: 100%;" name="owner_id" id="owner_id" required>
+                                                                <option value="{{current_user.id}}" selected>{{current_user.name}} ({{current_user.email}})</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <label for="tag_id">Теги контроля</label>
+                                                    <div class="select2-primary">
+                                                        <select multiple="multiple" class="form-control"
+                                                                data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                name="tag_id" id="tag_id" required>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p></p>
+                                        <h5 style='color: #5e9ca0; text-align: left;'><span style='color:#000000;'>Характеристики</span>
+                                        </h5>
+                                        <table class="table table-bordered" style="border-collapse:collapse">
+                                            <tbody>
+                                            <tr>
+                                                <th>Характеристика индикатора</th>
+                                                <th>Описание</th>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Покрываемый сегмент</b></td>
+                                                <td style="padding: 0px;">
+                                                    <select class="form-control is-invalid" id="segment_id"
+                                                            name="segment_id" style="height: 50px;" required>
+                                                            <option value="" selected disabled>Выберите покрываемый сегмент</option>
+                                                        {% for team in teams %}
+                                                        <optgroup id="segment_{{team.id}}" label="Команда: {{team.display_name}}">
+                                                            {% for segment in segments %}
+                                                                {% if segment.team_id == team.id %}
+                                                                <option value={{segment.id}}>{{segment.name}}</option>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </optgroup>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <!--s.segment_type_name-->
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Система-источник данных</b></td>
+                                                <td style="padding: 0px;">
+                                                    <select class="form-control is-valid" id="source_id"
+                                                            name="source_id" style="height: 50px" required>
+                                                        {% for source in sources %}
+                                                            <option value={{source.id}}>
+                                                                {{source.description}}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Условие отбора данных для проверки</b></td>
+                                                <td style="padding: 0px;">
+                                                    <textarea class="form-control is-invalid" rows="3"
+                                                                placeholder="Укажите условия отбора данных" id="conditions" name="conditions"
+                                                                required></textarea>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Описание проверки</b></td>
+                                                <td style="padding: 0px;">
+                                                    <textarea class="form-control is-invalid" rows="3"
+                                                                placeholder="Укажите описание контроля" id="description" name="description"
+                                                                required></textarea>
+                                                    <!--s.dq_rule_description-->
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <label for="object_id">Объекты контроля</label>
+                                                    <div class="select2-primary div-is-invalid">
+                                                        <select multiple="multiple" class="form-control"
+                                                                data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                name="object_id" id="object_id" required>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <label>Оповещение на почту (указать ФИО)</label>
+                                                    <div class="select2-primary">
+                                                        <select multiple="multiple"
+                                                                data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                name="alerting" id="alerting">
+                                                            <option value="{{current_user.id}}" selected>{{current_user.name}} ({{current_user.email}})</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label>Вид почтовой рассылки</label>
+                                                    <select class="form-control" name="alerting_type_id"
+                                                            id="alerting_type_id" required>
+                                                        {% for at in alerting_type %}
+                                                            <option value="{{ at['id'] }}">{{ at['display_name'] }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Вид создаваемого инцидента</label>
+                                                    <select class="form-control" name="jira_mode_id"
+                                                            id="jira_mode_id">
+                                                        <option value="0">Не создавать инцидент</option>
+                                                        {% for jm in jira_mode %}
+                                                            <option value="{{jm['id']}}">{{jm['display_name']}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label>Ссылка на Wiki</label>
+                                                    <input type="text" class="form-control" placeholder="Ссылка" name="wiki">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <h5 style='text-align: left;'>
+                                            <div class="row">
+                                                <span style='color:#000000;'>Уровни критичности результата </span>
+                                                <div class="tltp">
+                                                    <i class="nav-icon fas fa-info-circle fa-xs"></i>
+                                                    <span class="tooltiptext p-2">
+                                                        Уровни критичности:
+                                                        <br>От 0 до нижней границы - низкая
+                                                        <br>От нижней до верхней границы - средняя
+                                                        <br>Свыше верхней границы - высокая
+                                                    </span> 
+                                                </div>
+                                            </div>
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="threshold_min">Нижняя граница</label>
+                                                    <input class="form-control is-valid" style="width: 100%;" 
+                                                        id="threshold_min" name="threshold_min" type="number"
+                                                        value="1" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="threshold_max">Верхняя граница</label>
+                                                    <input class="form-control is-valid" style="width: 100%;" 
+                                                        id="threshold_max" name="threshold_max" type="number"
+                                                        value="2" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row"><br></div>
+                        <div class="row justify-content-between p-2">
+                            <div class="col-3">
+                                <button type="button"
+                                        class="btn btn-block btn-outline-primary"
+                                        onclick="location.href='/main';">
+                                    Выход
+                                </button>
+                            </div>
+                            <div class="col-3">
+                            </div>
+                            <div class="col-3">
+                                <button id="saveSpecButton" type="button"
+                                        class="btn btn-block btn-outline-primary"
+                                        onclick="saveSpec(true);">
+                                    Сохранить
+                                </button>
+                            </div>
+                            <div class="col-3">
+                                <button type="button" onclick="checkFill(1)"
+                                        class="btn btn-block btn-outline-primary">Далее</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="pdag" style="display:flex" class="card card-warning-h">
+                    <div class="card-header">
+                        <h3 class="card-title">Параметры DAG</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="card">
+                            <ul class="nav nav-pills" style="justify-content: space-between;" id="panels">
+                                <li class="nav-item col-4 text-center">
+                                <a class="nav-link active" href="#simple-control" data-toggle="tab">Простой контроль</a>
+                                </li>
+                                <li class="nav-item col-4 text-center">
+                                <a class="nav-link" href="#crossdb-control" data-toggle="tab">Кросс-системный контроль</a>
+                                </li>
+                                <li class="nav-item col-4 text-center">
+                                <a class="nav-link" href="#pattern-control" data-toggle="tab">Шаблонизированный контроль</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="row">
+                            <div class="tab-content col-lg-12">
+                                <div class="chart tab-pane active" id="simple-control" style="position: relative;">
+                                    <div id="input-simple">
+                                        <div class="form-group" id="div_source">
+                                            <label>Источник
+                                            <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                        id="source" name="source">
+                                                    {% for source in sources %}
+                                                    <option value="{{ source.id }}">{{source.description }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
+                                            <div id="sql" style="display:flex; width: 100%;" class="input-group mb-3">
+                                                <textarea class="form-control is-invalid" rows=15
+                                                    id="sql_query" name="sql_query"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart tab-pane" id="crossdb-control" style="position: relative;">
+                                    <div id="input-crossdb">
+                                        <div id="input-crossdb-sql">
+                                            <div class="input-group">
+                                                <div class="form-group">
+                                                    <label>Источник
+                                                        <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                                name="input-source">
+                                                            {% for source in sources %}
+                                                            <option value="{{ source.name }}">{{source.description }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </label>
+                                                    <label style="position: absolute; right: 0;">Наименование датафрейма
+                                                        <input type="text" class="form-control is-invalid mt-2" style="width: 20vw;"
+                                                                placeholder="Название датафрейма в главном запросе"
+                                                                name="input-src-name">
+                                                    </label>
+                                                </div>
+                                                <div class="form-group" style="width: 100%;">
+                                                    <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
+                                                    <div class="mb-3" style="width: 100%;">
+                                                        <textarea class="form-control is-invalid" rows="10"
+                                                            name="input-sql"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="btn-group" style="width: 100%;">
+                                                <button type="button" class="btn btn-default" onclick="addParam('input-crossdb-sql')">Добавить источник</button>
+                                                <button type="button" class="btn btn-default" onclick="removeParam('input-crossdb-sql')">Удалить источник</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-block btn-default js-toggle-btn">Главный запрос</button>
+                                            <div style="display:flex; width: 100%;" class="input-group mb-3">
+                                                <textarea class="form-control is-invalid" rows="15"
+                                                    id="main_query" name="main_query"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart tab-pane" id="pattern-control" style="position: relative;">
+                                    <div id="input-pattern">
+                                        <div class="form-group row">
+                                            <div class="col-4">
+                                                <label>Источник
+                                                    <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                            id="source_pattern" name="source_pattern">
+                                                        {% for source in sources %}
+                                                        <option value="{{ source.id }}">{{source.description }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </label>
+                                            </div>
+                                            <label style="position: absolute; right: 0;">SQL шаблон
+                                                <br><select 
+                                                        style="width: 20vw;"
+                                                        name="pattern_id" id="pattern_id">
+                                                </select>
+                                            </label>
+                                        </div>
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
+                                            <div style="display:flex;" class="input-group mb-3">
+                                                <textarea class="form-control" rows=15
+                                                    id="sql_pattern" name="sql_pattern" disabled></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <div class="col-lg-6 mt-2"><label class="ml-2">Наименование параметра (англ)</label></div>
+                                            <div class="col-lg-6 mt-2"><label>Значение параметра</label></div>
+                                            <div class="col-lg-12 mb-3" id="input-parameters">
+
+                                                <div class="input-group">
+                                                    <div class="col-lg-6">
+                                                        <input type="text" class="form-control mt-2" name="param-keys" disabled>
+                                                    </div>
+                                                    <div class="col-lg-6">
+                                                        <input type="text" class="form-control mt-2" name="param-values" disabled>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <!-- radio -->
+                            <div class="form-group">
+                                <div class="custom-control custom-radio">
+                                    <input class="custom-control-input" type="radio" id="customRadio1" checked
+                                            name="customRadio">
+                                    <label for="customRadio1" class="custom-control-label">Запуск по расписанию</label>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label>запуск:</label>
+                                        <select class="form-control" onchange="selectSch();" id="select_sch"
+                                                name="select_sch">
+                                            <option value="none">не запускать</option>
+                                            <option value="minutes">каждые минуты</option>
+                                            <option value="hour">каждый час</option>
+                                            <option value="day">каждый день</option>
+                                            <option value="week">каждую неделю</option>
+                                            <option value="month">каждый месяц</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-2" id="minutediv" hidden>
+                                        <label>минуты</label>
+                                        <select class="form-control" id="minute_select" onchange="printSch();"
+                                                name="minute_select">
+                                            <option value="5">05</option>
+                                            <option value="10">10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                            <option value="25">25</option>
+                                            <option value="30">30</option>
+                                            <option value="35">35</option>
+                                            <option value="40">40</option>
+                                            <option value="45">45</option>
+                                            <option value="50">50</option>
+                                            <option value="55">55</option>
+                                        </select>
+                                    </div>
+                                    <div id="hourdiv" class="form-group col-md-2" hidden>
+                                        <label>минуты</label>
+                                        <select class="form-control" id="hour_select" onchange="printSch();"
+                                                name="hour_select">
+                                            {% for minute in minutes %}
+                                            <option value="{{minute}}">{{minute}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-2" id="time_hour_day_div" hidden>
+                                        <label>часы</label>
+                                        <select class="form-control" id="time_hour_day_select"
+                                                onchange="printSch();"
+                                                name="time_hour_day_select">
+                                            {% for hour in hours %}
+                                            <option value="{{hour}}">{{hour}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-2" id="time_minute_day_div" hidden>
+                                        <label>минуты</label>
+                                        <select class="form-control" id="time_minute_day_select"
+                                                onchange="printSch();"
+                                                name="time_minute_day_select">
+                                            {% for minute in minutes %}
+                                            <option value="{{minute}}">{{minute}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div id="time_hour_week_div" class="form-group col-md-2" hidden>
+                                        <label>часы</label>
+                                        <select class="form-control" id="time_hour_week_select"
+                                                onchange="printSch();"
+                                                name="time_hour_week_select">
+                                            {% for hour in hours %}
+                                            <option value="{{hour}}">{{hour}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div id="time_minute_week_div" class="form-group col-md-2" hidden>
+                                        <label>минуты</label>
+                                        <select class="form-control" id="time_minute_week_select"
+                                                onchange="printSch();"
+                                                name="time_minute_week_select">
+                                            {% for minute in minutes %}
+                                            <option value="{{minute}}">{{minute}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div id="day_of_week_div" class="form-group col-md-4" hidden>
+                                        <label>день</label>
+                                        <select class="form-control" id="day_of_week_select" onchange="printSch();"
+                                                name="day_of_week_select">
+                                            <option value="1">понедельник</option>
+                                            <option value="2">вторник</option>
+                                            <option value="3">среда</option>
+                                            <option value="4">четверг</option>
+                                            <option value="5">пятница</option>
+                                            <option value="6">суббота</option>
+                                            <option value="0">воскресенье</option>
+                                        </select>
+                                    </div>
+                                    <div id="time_hour_month_div" class="form-group col-md-2" hidden>
+                                        <label>часы</label>
+                                        <select class="form-control" id="time_hour_month_select"
+                                                onchange="printSch();"
+                                                name="time_hour_month_select">
+                                            {% for hour in hours %}
+                                            <option value="{{hour}}">{{hour}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div id="time_minute_month_div" class="form-group col-md-2" hidden>
+                                        <label>минуты</label>
+                                        <select class="form-control" id="time_minute_month_select"
+                                                onchange="printSch();"
+                                                name="time_minute_month_select">
+                                            {% for minute in minutes %}
+                                            <option value="{{minute}}">{{minute}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div id="day_of_month_div" class="form-group col-md-4" hidden>
+                                        <label>день месяца</label>
+                                        <select class="form-control" id="day_of_month_select" onchange="printSch();"
+                                                name="day_of_month_select">
+                                            {% for day in days_in_month %}
+                                            <option value="{{day}}">{{day}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group"></div>
+                                <div id="descForSch" class="form-group"></div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="custom-control custom-checkbox">
+                                <input class="custom-control-input" type="checkbox" id="limit" checked
+                                        name="limit">
+                                <label for="limit" class="custom-control-label">Ограничивать количество записей в результате</label>
+                            </div>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="row justify-content-between p-2">
+                            <div class="col-3">
+                                <button type="button" onclick="pageToggle()"
+                                        class="btn btn-block btn-outline-primary">Назад</button>
+                            </div>
+                            <div class="col-3">
+                                <button id="butDone1" type="button"
+                                        class="btn btn-block btn-outline-primary"
+                                        onclick="saveSpec(false);">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="div_load" hidden>
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                    </div>
+                </div>
+
+            </form>
+            <!-- /.card-body -->
+            <div class="modal fade" id="modal-loading">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="d-flex justify-content-center">
+                                <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+        </div>
+    </div>
+
+    <!-- /.content --><a id="back-to-top" href="#" class="btn btn-primary back-to-top" role="button" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+</a>
+</div>
+<script type="text/javascript">
+    window.controlId = 0;
+    window.src_list = [{% for source in sources %} { id: "{{source.id}}", name: "{{source.name}}", description: "{{source.description}}" }, {% endfor %}];
+
+    window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- /.content-wrapper -->{% endblock content %}
+<!-- Specific Page JS goes HERE  -->{% block javascripts %}
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<script src="/static/assets/js/progressbar.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Select2 -->
+<script src="/static/assets/node_modules/select2/dist/js/select2.full.js"></script>
+<!-- Bootstrap4 Duallistbox -->
+<script src="/static/assets/node_modules/bootstrap4-duallistbox/dist/jquery.bootstrap-duallistbox.min.js"></script>
+<!-- InputMask -->
+<script src="/static/assets/node_modules/moment/min/moment.min.js"></script>
+<script src="/static/assets/node_modules/inputmask/dist/jquery.inputmask.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<script src="/static/assets/js/views/controls/handleChanges.js"></script>
+<script src="/static/assets/js/views/controls/validation.js"></script>
+<script src="/static/assets/js/views/controls/controls.js"></script>
+<script src="/static/assets/js/views/controls/create_control.js"></script>
+<script src="/static/assets/js/views/controls/utils.js"></script>
+
+{% endblock javascripts %}

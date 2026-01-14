@@ -1,0 +1,286 @@
+{% extends "layouts/base.html" %} {% block title %} Карточка контроля {% endblock %}
+<!-- Element injected in the BODY element -->{% block body_class %} {% endblock body_class %}
+<!-- Specific Page CSS goes HERE  -->{% block stylesheets %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/dq_mon.css">
+<link rel="stylesheet" href="/static/assets/css/1.css">
+{% endblock stylesheets %} {% block content %}
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                </div>
+                <div class="col-sm-6">
+                    <br>
+                </div>
+            </div>
+        </div>
+        <!-- /.container-fluid -->
+    </section>
+
+    <!------------------------------------------------------------------------------------------------------------------------------------>
+    <div class="t-Body-contentInner">
+        <div class="container" id="parent">
+            <div class="card card-warning">
+                <div class="card-header bg-primary">
+                    <h3 class="card-title" style="color: white">Карточка контроля</h3>
+                </div>
+
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Выберите карточку контроля</label>
+                        <select id="controlId" class="form-control" style="width: 100%;">
+                            <option value="0"></option>
+                            {% for control in controls %}
+                                <option value={{ control.id }} {% if control_id|int == control.id|int %} selected {% endif %} >
+                                    {{ control.id ~ ' - ' ~ control.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-block btn-default"
+                            onclick="redirectCotrol('show')">Вывести карточку контроля
+                    </button>
+                    <button type="button" class="btn btn-block btn-default" id="printSpec"
+                            onclick="window.print()">Распечатать
+                    </button>
+                    <button type="button" class="btn btn-block btn-default"
+                            onclick="redirectCotrol('update')">Изменение контроля
+                    </button>
+                    <button type="button" class="btn btn-block btn-default"
+                            onclick="redirectCotrol('report')">Посмотреть результаты работы контроля
+                    </button>
+                    <button type="button" class="btn btn-block btn-default"
+                            onclick="redirectCotrol('clone')">Клонировать контроль
+                    </button>
+                </div>
+                <div class="row ml-2" style="justify-content: center;">
+                    <div class="col-sm-1">
+                        <a data-title="Запустить контроль" id="triggerDag"
+                            class="nav-link tip">
+                            <i class="fas fa-play fa-lg"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-1">
+                        <a data-title="Остановить контроль" id="killDag"
+                            class="nav-link tip">
+                            <i class="fas fa-stop fa-lg"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-1">
+                        <a data-title="Статус контроля" id="statusDag"
+                            class="nav-link tip">
+                            <i class="fas fa-info-circle fa-lg"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-1">
+                        <a data-title="Выключить" id="pauseDag"
+                            class="nav-link tip">
+                            <i class="fas fa-ban fa-lg"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-1">
+                        <a data-title="Включить" id="unpauseDag"
+                            class="nav-link tip">
+                            <i class="fas fa-redo fa-lg"></i>
+                        </a>
+                    </div>
+                    <div class="col-sm-1">
+                        <a href="/controls/create" data-title="Создать ККД"
+                            class="nav-link tip">
+                            <i class="nav-icon fas fa-plus fa-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                <br>
+                {% if card is not none %}
+                <div class="t-Region-body" style="padding-bottom: 5%;">
+                    <div id="parentId">
+                        <div id='print_area'>
+                            <div class='rpt-main'>
+                                <div class='rpt-header'>
+                                    <div class='rpt-content'>
+                                        <h3 style='color: #5e9ca0; text-align: center;'><span
+                                                style='color:#000000;'>Карточка контроля</span></h3>
+                                        <h4 style='color: #5e9ca0; text-align: center;'><span
+                                                style='color:#000000;'>{{card.id}}</span></h4>
+                                        <h5 style='color: #5e9ca0; text-align: left;'><span
+                                                style='color:#000000;'>Термины</span></h5>
+                                        <table class="table table-bordered">
+                                            <tbody>
+                                            <tr>
+                                                <th>Термин</th>
+                                                <th>Определение</th>
+                                            </tr>
+                                            <tr>
+                                                <td>КД</td>
+                                                <td>Качество Данных</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <p></p>
+                                        <h5 style='color: #5e9ca0; text-align: left;'>
+                                            <span style='color:#000000;'>Описание контроля качества данных</span>
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <div class="form-group">
+                                                    <label for="tags">Теги</label>
+                                                        <p>{{ tags | join(', ') }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label>Наименование контроля</label>
+                                                    <p>{{card.name}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label>Статус контроля</label>
+                                                    <p>{{status}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="critical_level">Уровень критичности контроля</label>
+                                                    <p>{{card.critical_level}}</p>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="control_type">Тип контроля</label>
+                                                    <p>{{card.control_type_name}}</p>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="officer">Ответственные</label>
+                                                    {% for owner in owners %}
+                                                        <p>{{owner.name}} ({{owner.email}})</p>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="team">Команда</label>
+                                                    <p>{{card.team_name}}</p>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="control_type">Предметная область контроля</label>
+                                                    <p>{{card.subject_area_name}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <h5 style='color: #5e9ca0; text-align: left;'>
+                                            <span style='color:#000000;'>
+                                                Характеристики
+                                            </span>
+                                        </h5>
+                                        <table class="table table-bordered" style="border-collapse:collapse">
+                                            <tbody>
+                                            <tr>
+                                                <th>Характеристика индикатора</th>
+                                                <th>Описание</th>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Система-источник данных</b></td>
+                                                <td> {{card.source_name}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Условие отбора данных для проверки</b></td>
+                                                <td>{{card.conditions}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Описание проверки</b></td>
+                                                <td>{{card.description}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b>Тип DAG</b></td>
+                                                <td>{{ dag_type }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="control_object">Объекты контроля</label>
+                                                    {% for object in objects %}
+                                                        <p>{{object.schema}}.{{object.table_name}}</p>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="control_jira">Вид создаваемого инцидента</label>
+                                                    <p>{{ jira_mode }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                        <h5 style='text-align: left;'>
+                                            <div class="row">
+                                                <span style='color:#000000;'>Уровни критичности результата </span>
+                                                <div class="tltp">
+                                                    <i class="nav-icon fas fa-info-circle fa-xs"></i>
+                                                    <span class="tooltiptext p-2">
+                                                        Уровни критичности:
+                                                        <br>От 0 до нижней границы - низкая
+                                                        <br>От нижней до верхней границы - средняя
+                                                        <br>Свыше верхней границы - высокая
+                                                    </span> 
+                                                </div>
+                                            </div>
+                                        </h5>
+                                        <div class="row">
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="threshold_min">Нижняя граница</label>
+                                                    <p>{{card.threshold_min}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="form-group">
+                                                    <label for="threshold_max">Верхняя граница</label>
+                                                    <p>{{card.threshold_max}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- /.content-wrapper -->{% endblock content %}
+<!-- Specific Page JS goes HERE  -->{% block javascripts %}
+
+<script type="text/javascript">
+    window.csrf_token = "{{ csrf_token() }}";
+</script>
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<!-- custom functions for controls.html -->
+<script src="/static/assets/js/views/controls/cards.js"></script>
+<!-- function to initialize bootstrap elements -->
+<script src="/static/assets/js/api/apiAirflow.js"></script>
+
+{% endblock javascripts %}

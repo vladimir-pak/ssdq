@@ -1,0 +1,102 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Карточка пользователя {% endblock %}
+
+<!-- Element injected in the BODY element -->
+{% block body_class %} sidebar-mini {% endblock body_class %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="/static/assets/node_modules/@fortawesome/fontawesome-free/css/all.min.css">
+<!-- Theme style -->
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Личный кабинет</h1>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">          
+          <div class="card card-success">
+            <div class="card-header bg-primary">
+              <h3 class="card-title">Личный кабинет</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>ФИО</label>
+                    <input type="text" class="form-control" value="{{current_user.name}}" readonly>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Команда</label>
+                    <input type="text" class="form-control" value="{{current_user.team_name}}" readonly>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" class="form-control" value="{{current_user.login}}" readonly>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Роль</label>
+                    <input type="text" class="form-control" value="{{ current_user.role_name }}" readonly>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" class="form-control" value="{{current_user.email}}" readonly>
+                  </div>
+                </div>
+              </div>
+              <input type="button" style="float:right; width:20%" class="btn btn-outline-primary" 
+                onclick="location.href='/main';" value="Выход" />
+            </div>
+            <!-- /.card-body -->
+          </div>
+        </div>
+        <!--/.col (right) -->
+      </div>
+      <!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<!-- jQuery -->
+<script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock javascripts %}
