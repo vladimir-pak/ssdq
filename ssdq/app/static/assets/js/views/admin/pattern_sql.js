@@ -224,7 +224,7 @@ $('#add, #update, #remove, #hardRemove, #restore').on('click', function() {
     };
 
     postRequests.postRequest(
-        'api/admin/pattern-sql' + (this.id != "add" ? `/${$("#id").val()} `: ""), 
+        'api/admin/pattern-sql' + (this.id != "add" ? `/${$("#id").val()} ` : ""), 
         this.id,
         this.id == 'hardRemove' ? 'hardDelete=True' : undefined,
         this.id == "add" ? "PUT" : undefined,

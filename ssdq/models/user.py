@@ -54,8 +54,8 @@ class Users(Base, UserMixin):
         ).add_columns(
             Roles.name
         ).filter(
-            user_roles.user_id == self.id        ).first().name
-        print(data)
+            user_roles.user_id == self.id
+        ).first().name
         return str(data)
 
     @property

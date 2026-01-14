@@ -198,14 +198,6 @@ $('#report tbody').on('change', 'input[type="checkbox"]', function(){
         };
         let attr = attributesMap[Number(ind)];
         $("#" + attr).val(val);
-        // Handling error reason select
-        // if (ind == 3) {
-        //     $("#error_reason > option").each(function() {
-        //         if (val == $(this).html()) {
-        //             $(this).prop("selected", true);
-        //         };
-        //     });
-        // } else if (ind == 1) {
         if (ind == 1) {
             $("#jira_issue").html(`<a href="${jiraUrl + val}">${val}</a>`);
         };

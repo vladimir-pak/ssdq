@@ -189,7 +189,7 @@ const htmlParamMap = {
                 <select class="form-control is-valid mt-2" style="width: 20vw;"
                         data-handle-change="dq_dag_sdim"
                         name="input-source">
-                        ${src_list.map(e => {return<option value="${e.name}">${e.description}</option>})}
+                        ${src_list.map(e => {return `<option value="${e.name}">${e.description}</option>`})}
                 </select>
             </label>
             <label style="position: absolute; right: 0;">Наименование датафрейма

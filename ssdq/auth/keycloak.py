@@ -1,6 +1,4 @@
-from flask import current_app, Response
-from flask import session, redirect, request
-from urllib.parse import urlparse
+from flask import current_app, Response, session, redirect
 from datetime import datetime, timezone
 from ..app.extensions import db
 from ..models.user import Users, user_login, user_roles, Teams, Roles
@@ -27,6 +25,7 @@ class KeyCloakLogin:
             self.user_login(user, self.token_id)
             
             LogEvent.log_event(eventName="login")
+            session.permanent = True
             session['lifetime'] = datetime.now(timezone.utc) + self.PERMANENT_SESSION_LIFETIME
             return redirect('main')
         else:

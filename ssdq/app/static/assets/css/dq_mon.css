@@ -232,3 +232,7 @@
 .charts-p {
   padding: 0.25rem 0.75rem 0.5rem 0.75rem;
 }
+
+.custom-file-label::after {
+  content: "Обзор" !important;
+}

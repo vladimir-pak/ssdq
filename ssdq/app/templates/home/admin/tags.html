@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Справочник "Источники" {% endblock %}
+{% block title %} Справочник "Теги" {% endblock %}
 
 <!-- Element injected in the BODY element -->
 {% block body_class %} sidebar-mini {% endblock body_class %}
@@ -28,7 +28,7 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Источники</h1>
+          <h1>Теги</h1>
         </div>
       </div>
     </div><!-- /.container-fluid -->
@@ -42,7 +42,7 @@
           <form method="post">
             <div class="card card-success card">
               <div class="card-header bg-primary">
-                <h3 class="card-title">Добавление источника</h3>
+                <h3 class="card-title">Добавление тега</h3>
                 <div class="card-tools">
                   <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
                     <i class="fas fa-minus"></i>
@@ -57,74 +57,38 @@
                       <input type="text" class="form-control" id="id" name="id" readonly>
                     </div>
                     <div class="form-group">
-                      <label>Наименование</label>
-                      <input type="text" class="form-control" id="name" name="name" required
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
-                    </div>
-                  </div>
-                  <div class="col-sm-6">
-                    <div class="form-group">
-                      <label>Описание</label>
-                      <textarea class="form-control" id="description" name="description" style="height: 123px;" required
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-sm-3">
-                    <div class="form-group">
-                      <label>Хост</label>
-                      <input type="text" class="form-control" id="host" name="host"
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
-                    </div>
-                  </div>
-                  <div class="col-sm-3">
-                    <div class="form-group">
-                      <label>Порт</label>
-                      <input type="text" class="form-control" id="port" name="port"
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
-                    </div>
-                  </div>
-                  <div class="col-sm-3">
-                    <div class="form-group">
-                      <label>Тип СУБД</label>
-                      <select id="dbtype" name="dbtype" class="form-control"
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
-                        {% for val in dbtypes %}
-                        <option value="{{ val }}">{{ val }}</option>
+                      <label>Команда</label>
+                      <select class="form-control" id="team_id" name="team_id" onchange="" required>
+                        {% for team in teams %}
+                        <option value="{{team.id}}" {% if current_user.team_id == team.id %}selected{% endif %}>{{team.name}}</option>
                         {% endfor %}
                       </select>
                     </div>
                   </div>
-                  <div class="col-sm-3">
+                  <div class="col-sm-6">
                     <div class="form-group">
-                      <label>SSLMODE</label>
-                      <input type="text" class="form-control" id="sslmode" name="sslmode"
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
+                      <label>Наименование</label>
+                      <input type="text" class="form-control" id="name" name="name" required
+                      {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
+                      <label>Описание</label>
+                      <textarea class="form-control" id="description" name="description" style="height: 123px;" required
+                      {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}></textarea>
                     </div>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-sm-3">
-                    <div class="form-group">
-                      <label>База данных</label>
-                      <input type="text" class="form-control" id="db_name" name="db_name"
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
-                    </div>
-                  </div>
-                </div>
+
                 <div class="row">
                   <div class="col-sm-6">
-                    {% if current_user.admin %}
+                    {% if current_user.role_name == "TeamOwner" or current_user.admin %}
                     <button type="button" style="float:left; width:25%;" class="btn btn-outline-primary" id="add">Добавить</button>
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="update">Изменить</button>
-                    <button type="button" style="float:right; width:25%; display:none;" class="btn btn-outline-primary" id="restore">Восстановить</button>
                     {% endif %}
                   </div>
                   <div class="col-sm-6">
-                    {% if current_user.admin %}
+                    {% if current_user.role_name == "TeamOwner" or current_user.admin %}
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="remove">Удалить</button>
-                    <button type="button" style="float:left; width:25%; display:none; margin-left: 2vw;" class="btn btn-outline-primary" id="hardRemove">Удалить насвегда</button>
                     {% endif %}
                     <button type="button" style="float:right; width:25%" class="btn btn-outline-primary" onclick="location.href='/admin';">Выход</button>
                   </div>
@@ -136,23 +100,17 @@
           </form>
           <div class="card card-success">
             <div class="card-header bg-primary">
-              <h3 class="card-title">Все источники</h3>
+              <h3 class="card-title">Все теги</h3>
             </div>
             <!-- /.card-header -->
             <div class="card-body">
               <div id="table">
-              <table id="sources" class="table table-bordered table-striped">
+              <table id="tags" class="table table-bordered table-striped">
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Наименование</th>
+                    <th>Название</th>
                     <th>Описание</th>
-                    <th>Хост</th>
-                    <th>Порт</th>
-                    <th>База данных</th>
-                    <th>Тип СУБД</th>
-                    <th>SSLMODE</th>
-                    <th>Удален</th>
                   </tr>
                 </thead>
               </table>
@@ -164,7 +122,6 @@
         </div>
       </div>
     </div>
-      <!-- /.row --><!-- /.container-fluid -->
   </section>
   <!-- /.content -->
 </div>
@@ -190,6 +147,6 @@
 
 <script src="/static/assets/js/datatable_handler/utils.js"></script>
 <script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
-<script src="/static/assets/js/views/admin/sources.js"></script>
+<script src="/static/assets/js/views/admin/tags.js"></script>
 
 {% endblock javascripts %}

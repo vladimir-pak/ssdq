@@ -85,3 +85,15 @@ AS WITH agg AS (
    FROM ssdq.dq_control_sdim c
      LEFT JOIN agg ON c.id = agg.control_id
   WHERE c.deleted_flag::text = 'N'::text;
+
+
+CREATE OR REPLACE VIEW ssdq.dq_detailjournal_view
+AS SELECT dt.control_id,
+    dt.report_time,
+    dt.xk,
+    dt.pm_workflow_run_id,
+    dt."json",
+    t.name AS group_id
+   FROM ssdq.dq_detailjournal_web dt
+     JOIN ssdq.dq_control_sdim c ON dt.control_id = c.id AND c.deleted_flag::text <> 'Y'::text
+     JOIN ssdq_admin.teams t ON c.team_id = t.id;

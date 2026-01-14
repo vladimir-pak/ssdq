@@ -92,7 +92,7 @@ window.postRequests = class PostRequests {
 
         $.ajax({
             type: method ? method : methodMap[buttonId],//"POST",
-            url: `${this.url + endpoint}${params ? `?${params}`: ''}`,
+            url: `${this.url + endpoint}${params ? `?${params}` : ''}`,
             data: formData,
             headers: {"X-CSRFToken": csrf_token},
             dataType: "json",

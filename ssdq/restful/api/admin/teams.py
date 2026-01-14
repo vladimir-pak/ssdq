@@ -211,9 +211,9 @@ class TeamConnection:
             encrypted_pass = self.encrypt(form['password'])
             data = {
                 "data": {
-                    "host": form['host'],
-                    "port": form['port'],
-                    "db": form['db_name'],
+                    # "host": form['host'],
+                    # "port": form['port'],
+                    # "db": form['db_name'],
                     "username": form['username'],
                     "password": encrypted_pass.decode('utf-8')
                 }

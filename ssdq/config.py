@@ -29,6 +29,7 @@ SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "json_serializer": partial(j
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 SUPERSET_URL = "https://superset/"
+STREAMLIT_URL = "https://streamlit/"
 JIRA_URL = "https://jira/api/v1/"
 AIRFLOW_API_URL = "https://airflow/api/v1/"
 AIRFLOW_AUTH_CRED = "admin:admin"
@@ -167,7 +168,7 @@ OIDC_CLIENT_SECRETS = {
         "token_introspection_uri": "http://localhost/auth/realms/users/protocol/openid-connect/token/introspect"
     }
 }
-AUTH_GROUP_MAPPING = {
+GROUP_MAPPING = {
     "admin": {
         "roles": ["admin"],
         "team": "admin"

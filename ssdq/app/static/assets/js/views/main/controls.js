@@ -102,7 +102,7 @@ const htmlContent = (
                 </div>
                 <div id="favorite_div_${controlId}" class="favorite-div p-2">
                     <a data-title="Редактировать" class="nav-link tip-left p-1" href="/controls/${controlId}">
-                    <i class="nav-icon fas fa-pencil-alt"></i>
+                        <i class="nav-icon fas fa-pencil-alt"></i>
                     </a>
                     <a data-title="Клонировать" class="nav-link tip-left p-1" href="/controls/${controlId}/clone">
                         <i class="nav-icon fas fa-copy"></i>

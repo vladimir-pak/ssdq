@@ -66,7 +66,7 @@ class InputValidator:
     @staticmethod
     def validate_airflow_url(url:str) -> bool:
         regex_pattern = re.compile(
-            r"^http(s|)://[a-zA-Z]*\S*(|:\d{2,5})/api/v1/sdq/(deploy|delete|upload_config|status|enable|disable|kill|trigger)$", re.IGNORECASE
+            r"^http(s|)://[a-zA-Z]*\S*(|:\d{2,5})/api/v1/sdq/\S*$", re.IGNORECASE
         )
         return re.match(regex_pattern, url) is not None
 

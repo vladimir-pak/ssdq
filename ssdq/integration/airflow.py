@@ -28,7 +28,7 @@ class Dag:
 
         self.id = id
 
-    def prepare_json(self) -> dict:
+    def _prepare_json(self) -> dict:
         try:
             dag_info = db.session.query(dq_control_sdim).join(
                 dq_dag_sdim, dq_dag_sdim.control_id == dq_control_sdim.id
@@ -260,11 +260,11 @@ class AirflowAPI:
             'Content-Type': 'application/json',
         }
 
-    def get_status(self, id:str|int):
+    def _get_status(self, id:str|int):
         try:
             endpoint = self.url + 'sdq/status'
             if InputValidator.validate_airflow_url(endpoint):
-                params = {'dag_id': f"dq{id}"}
+                params = {'dag_id': f"dq_{id}"}
                 response = requests.get(endpoint, headers=self.headers, params=params, auth=self.auth, verify=self.AIRFLOW_CERT_PATH)
                 if 200 <= response.status_code  < 300:
                     return response.json()

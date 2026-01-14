@@ -61,11 +61,11 @@ class SimpleControl(ControlDag):
     def __init__(self, control_id:int|str):
         super().__init__(control_id)
 
-    def create(self, data, cron:str=None) -> None:
+    def create(self, cron:str=None, **data) -> None:
         dag = dq_dag_sdim(
             control_id=self.control_id,
             sql=data["sql_query"],
-            cron=cron if cron else self._get_cron(data),
+            cron=cron if cron else self._get_cron(**data),
             source=str(UUID(data["source"])),
             dag_type=DagType.SIMPLE.value,
             limit=data['limit']
@@ -78,13 +78,13 @@ class CrossDbControl(ControlDag):
     def __init__(self, control_id:int|str):
         super().__init__(control_id)
 
-    def create(self, data, cron:str=None) -> None:
+    def create(self, cron:str=None, **data) -> None:
         dag = dq_dag_sdim(
             control_id=self.control_id,
             dag_type=DagType.CROSSDATABASE.value,
             sql=data['main_query'],
             params=data['params'],
-            cron=cron if cron else self._get_cron(data),
+            cron=cron if cron else self._get_cron(**data),
             limit=data['limit']
         )
         db.session.add(dag)
@@ -95,10 +95,10 @@ class PatternControl(ControlDag):
     def __init__(self, control_id:int|str):
         super().__init__(control_id)
 
-    def create(self, data, cron:str=None) -> None:
+    def create(self, cron:str=None, **data) -> None:
         dag = dq_dag_sdim(
             control_id=self.control_id,
-            cron=cron if cron else self._get_cron(data),
+            cron=cron if cron else self._get_cron(**data),
             source=str(UUID(data["source_pattern"])),
             dag_type=DagType.PATTERN.value,
             pattern_id=data["pattern_id"],

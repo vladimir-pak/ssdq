@@ -81,14 +81,14 @@
                 
                 <div class="row">
                   <div class="col-sm-6">
-                    {% if current_user.admin or "TeamOwner" in current_user.roles %}
+                    {% if current_user.admin or "TeamOwner" in current_user.role_name %}
                     <button type="button" style="float:left; width:25%;" class="btn btn-outline-primary" id="add">Добавить</button>
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="update">Изменить</button>
                     <button type="button" style="float:right; width:25%; display:none;" class="btn btn-outline-primary" id="restore">Восстановить</button>
                     {% endif %}
                   </div>
                   <div class="col-sm-6">
-                    {% if current_user.admin or "TeamOwner" in current_user.roles %}
+                    {% if current_user.admin or "TeamOwner" in current_user.role_name %}
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="remove">Удалить</button>
                     <button type="button" style="float:left; width:25%; display:none; margin-left: 2vw;" class="btn btn-outline-primary" id="hardRemove">Удалить навсегда</button>
                     {% endif %}

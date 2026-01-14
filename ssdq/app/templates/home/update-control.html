@@ -80,7 +80,8 @@
                                         <div class='rpt-content'>
                                             <h3 style='color: #5e9ca0; text-align: center;'>
                                                 <span style='color:#000000;'>
-                                                    Карточка контроля {% if not request.endpoint.endswith("clone_control") %}{{control.id}}{% endif %}
+                                                    Карточка контроля 
+                                                    {% if not request.endpoint.endswith("clone_control") %}{{control.id}}{% endif %}
                                                 </span>
                                             </h3>
                                             <h4 style='color: #5e9ca0; text-align: center;'><span
@@ -129,7 +130,8 @@
                                                                 {% endfor %}
                                                             {% else %}
                                                                 {% for status in statuses %}
-                                                                    <option value="{{ status['id'] }}" {% if status['id'] == control.status_id %} selected {% endif %}>{{ status['display_name']}}</option>
+                                                                    <option value="{{ status['id'] }}" 
+                                                                        {% if status['id'] == control.status_id %} selected {% endif %}>{{ status['display_name']}}</option>
                                                                 {% endfor %}
                                                             {% endif %}
                                                         </select>
@@ -221,7 +223,7 @@
                                                                     {% endfor %}
                                                                 </select>
                                                             </div>
-                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -272,7 +274,7 @@
                                                             {% for team in teams %}
                                                             <optgroup id="segment_{{team.id}}" label="Команда: {{team.display_name}}">
                                                                 {% for segment in segments %}
-                                                                {% if segment.team_id == team.id %}
+                                                                    {% if segment.team_id == team.id %}
                                                                     <option value={{segment.id}} {% if control.segment_id==segment.id %} selected {% endif %}>
                                                                         {{segment.name}}
                                                                     </option>
@@ -396,7 +398,7 @@
                                             <br>
                                             <h5 style='text-align: left;'>
                                                 <div class="row">
-                                                    <span style='color:#000000;'>Уровни критичности результата </span>
+                                                    <span style='color:#000000;'>Уровни критичности результата&nbsp;</span>
                                                     <div class="tltp">
                                                         <i class="nav-icon fas fa-info-circle fa-xs"></i>
                                                         <span class="tooltiptext p-2">
@@ -418,7 +420,7 @@
                                                             value="{{control.threshold_min}}">
                                                     </div>
                                                 </div>
-                                            <div class="col-sm-6">
+                                                <div class="col-sm-6">
                                                     <div class="form-group">
                                                         <label for="threshold_max">Верхняя граница</label>
                                                         <input class="form-control" style="width: 100%;" 
@@ -617,7 +619,7 @@
                                                             <option value="{{ sql_pattern.id }}" selected>{{ sql_pattern.name if sql_pattern }}</option>
                                                         </select>
                                                 </label>
-                                                </div>
+                                            </div>
                                             <div class="form-group">
                                                 <button type="button" class="btn btn-block btn-default js-toggle-btn">Запрос</button>
                                                 <div style="display:flex;" class="input-group mb-3">

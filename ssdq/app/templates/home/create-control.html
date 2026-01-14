@@ -178,7 +178,8 @@
                                                     <div id="owner_name">
                                                         <div class="select2-primary div-is-valid">
                                                             <select multiple="multiple" class="form-control is-valid"
-                                                                    data-dropdown-css-class="select2-primary" style="width: 100%;" name="owner_id" id="owner_id" required>
+                                                                    data-dropdown-css-class="select2-primary" style="width: 100%;"
+                                                                    name="owner_id" id="owner_id" required>
                                                                 <option value="{{current_user.id}}" selected>{{current_user.name}} ({{current_user.email}})</option>
                                                             </select>
                                                         </div>
@@ -318,7 +319,7 @@
                                         <br>
                                         <h5 style='text-align: left;'>
                                             <div class="row">
-                                                <span style='color:#000000;'>Уровни критичности результата </span>
+                                                <span style='color:#000000;'>Уровни критичности результата&nbsp;</span>
                                                 <div class="tltp">
                                                     <i class="nav-icon fas fa-info-circle fa-xs"></i>
                                                     <span class="tooltiptext p-2">
@@ -401,7 +402,7 @@
                                     <div id="input-simple">
                                         <div class="form-group" id="div_source">
                                             <label>Источник
-                                            <select class="form-control is-valid mt-2" style="width: 20vw;"
+                                                <select class="form-control is-valid mt-2" style="width: 20vw;"
                                                         id="source" name="source">
                                                     {% for source in sources %}
                                                     <option value="{{ source.id }}">{{source.description }}</option>
@@ -688,7 +689,9 @@
         </div>
     </div>
 
-    <!-- /.content --><a id="back-to-top" href="#" class="btn btn-primary back-to-top" role="button" aria-label="Scroll to top">
+    <!-- /.content -->
+     <a id="back-to-top" href="#" class="btn btn-primary back-to-top" role="button" 
+        aria-label="Scroll to top">
     <i class="fas fa-chevron-up"></i>
 </a>
 </div>
