@@ -11,3 +11,5 @@ env
 venv
 .venv/
 .sublime
+DS_Store/
+ssdq/DS_Store/
