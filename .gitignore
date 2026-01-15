@@ -9,4 +9,5 @@ ssdq.egg-info/
 .vscode/
 env
 venv
+.venv/
 .sublime
