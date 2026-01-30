@@ -19,6 +19,7 @@ const columnDefs = [
     { headerName: "Вид создаваемого инцидента", field: "jira_mode", colId: "jira_mode", filter: "agTextColumnFilter", minWidth: 255 },
     { headerName: "Объект", field: "object_name", colId: "object_name", filter: "agTextColumnFilter" },
     { headerName: "Ответственный", field: "owner", colId: "owner", filter: "agTextColumnFilter", minWidth: 155 },
+    { headerName: "Теги", field: "tags", colId: "tags", filter: "agTextColumnFilter" },
     { headerName: "Последний запуск", field: "report_date", colId: "report_date", filter: "agDateColumnFilter", minWidth: 180 },
     { headerName: "Результат", field: "mistake_count", colId: "mistake_count", filter: "agTextColumnFilter" }
 ];

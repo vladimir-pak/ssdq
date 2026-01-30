@@ -21,9 +21,9 @@ const columnDefs = [
 const rowHandler = (data, event) => {
     if (data) {
         $('#id').val(data.id);
-        $('#base_name').val(data.name);
-        $('#schema').val(data.description);
-        $('#table_name').val(data.name);
+        $('#base_name').val(data.base_name);
+        $('#schema').val(data.schema);
+        $('#table_name').val(data.table_name);
         $('#description').val(data.description);
     } else {
         $('#id').val('');

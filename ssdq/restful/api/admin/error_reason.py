@@ -30,10 +30,11 @@ class AdminErrorReason():
         )
         
     def get_grid(self):
-        return self.grid.get_grid()
+        return self.grid.get_grid(base_filters={"teamId": error_reason_sdim.team_id})
 
     def export_csv_stream(self):
         return self.grid.export_csv_stream(
+            base_filters={"teamId": error_reason_sdim.team_id},
             filename="error_reason_sdim.csv"
         )
 

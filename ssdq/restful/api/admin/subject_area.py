@@ -30,10 +30,11 @@ class AdminSubjectArea():
         )
         
     def get_grid(self):
-        return self.grid.get_grid()
+        return self.grid.get_grid(base_filters={"teamId": subject_area_sdim.team_id})
 
     def export_csv_stream(self):
         return self.grid.export_csv_stream(
+            base_filters={"teamId": subject_area_sdim.team_id},
             filename="subject_area_sdim.csv"
         )
     

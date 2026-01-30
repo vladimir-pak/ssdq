@@ -30,7 +30,7 @@ function makeDatasource() {
         getRows: async (params) => {
             try {
                 const body = {
-                    teamId: $("#team_id").val(),
+                    teamId: $("#team_id").val() ? $("#team_id").val() : window.team_id,
                     startRow: params.startRow,
                     endRow: params.endRow,
                     sortModel: params.sortModel,

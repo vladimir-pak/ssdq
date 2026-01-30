@@ -28,10 +28,11 @@ class AdminTeamAttributes():
         )
         
     def get_grid(self):
-        return self.grid.get_grid()
+        return self.grid.get_grid(base_filters={"teamId": dq_team_attributes_dim.team_id})
 
     def export_csv_stream(self):
         return self.grid.export_csv_stream(
+            base_filters={"teamId": dq_team_attributes_dim.team_id},
             filename="dq_team_attributes_dim.csv"
         )
 

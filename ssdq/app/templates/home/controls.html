@@ -185,12 +185,14 @@
                                                     <th>Наименование атрибута</th>
                                                     <th>Значение</th>
                                                 </tr>
-                                                {% for k, v in card.team_attributes.items() %}
-                                                <tr>
-                                                    <td>{{ k }}</th>
-                                                    <td>{{ v }}</th>
-                                                </tr>
-                                                {% endfor %}
+                                                {% if card.team_attributes %}
+                                                    {% for k, v in card.team_attributes.items() %}
+                                                    <tr>
+                                                        <td>{{ k }}</th>
+                                                        <td>{{ v }}</th>
+                                                    </tr>
+                                                    {% endfor %}
+                                                {% endif %}
                                             </tbody>
                                         </table>
                                         <br>
