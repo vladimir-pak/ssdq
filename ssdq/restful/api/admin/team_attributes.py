@@ -1,17 +1,15 @@
-from ....models.dict import subject_area_sdim
+from ....models.dict import dq_team_attributes_dim
 from ....logger.log import LogEvent
 from ....app.extensions import db
 from ..aggrid import AGGrid
-from flask import request
-from sqlalchemy import or_, String
 from .wtforms import TeamDictForm
 
 
 ALLOWED_COLS = {
-    "id": subject_area_sdim.id,
-    "name": subject_area_sdim.name,
-    "description": subject_area_sdim.description,
-    "deleted_flag": subject_area_sdim.deleted_flag
+    "id": dq_team_attributes_dim.id,
+    "name": dq_team_attributes_dim.name,
+    "description": dq_team_attributes_dim.description,
+    "is_required": dq_team_attributes_dim.is_required
 }
 
 TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
@@ -19,10 +17,10 @@ DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
 SET_OPS = {"set"}  # agSetColumnFilter
 
 
-class AdminSubjectArea():
+class AdminTeamAttributes():
     def __init__(self):
         self.grid = AGGrid(
-            obj=subject_area_sdim,
+            obj=dq_team_attributes_dim,
             allowed_cols=ALLOWED_COLS,
             text_ops=TEXT_OPS,
             date_ops=DATE_OPS,
@@ -34,22 +32,23 @@ class AdminSubjectArea():
 
     def export_csv_stream(self):
         return self.grid.export_csv_stream(
-            filename="subject_area_sdim.csv"
+            filename="dq_team_attributes_dim.csv"
         )
-    
+
     @staticmethod
     def add():
         try:
             form = TeamDictForm()
             if form.validate():
-                entity = subject_area_sdim(
+                entity = dq_team_attributes_dim(
                     name=form.name.data,
                     description=form.description.data,
-                    team_id=form.team_id.data
+                    team_id=form.team_id.data,
+                    is_required=True if form.is_required.data == "on" else False
                 )
                 db.session.add(entity)
                 db.session.commit()
-                LogEvent.log_event(eventName="createEntity", entityName="subject_area", entityId=entity.id)
+                LogEvent.log_event(eventName="createEntity", entityName="team_attributes", entityId=entity.id)
                 return '', 204
             else:
                 return {"message": "CSRF Token Missing or Invalid"}, 403 
@@ -62,38 +61,27 @@ class AdminSubjectArea():
         try:
             form = TeamDictForm()
             if form.validate():
-                entity = subject_area_sdim.query.filter_by(id=id).update(dict(
+                entity = dq_team_attributes_dim.query.filter_by(id=id).update(dict(
                     name=form.name.data,
-                    description=form.description.data
+                    description=form.description.data,
+                    team_id=form.team_id.data,
+                    is_required=True if form.is_required.data == "on" else False
                 ))
                 db.session.commit()
-                LogEvent.log_event(eventName="updateEntity", entityName="subject_area", entityId=str(id))
+                LogEvent.log_event(eventName="updateEntity", entityName="team_attributes", entityId=str(id))
                 return '', 204
             else:
                 return {"message": "CSRF Token Missing or Invalid"}, 403 
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
-        
-    @staticmethod
-    def delete_restore(id:str, restore=False):
-        try:
-            entity = subject_area_sdim.query.filter_by(id=id).update(dict(
-                deleted_flag='N' if restore else 'Y'
-            ))
-            db.session.commit()
-            LogEvent.log_event(eventName="updateEntity" if restore else "deleteEntity", entityName="subject_area", entityId=str(id))
-            return '', 204
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
 
     @staticmethod
-    def hard_delete(id:str):
+    def delete(id:str):
         try:
-            entity = subject_area_sdim.query.filter_by(id=id).delete()
+            entity = dq_team_attributes_dim.query.filter_by(id=id).delete()
             db.session.commit()
-            LogEvent.log_event(eventName="deleteEntity", entityName="subject_area", entityId=str(id))
+            LogEvent.log_event(eventName="deleteEntity", entityName="team_attributes", entityId=str(id))
             return '', 204
         except Exception as ex:
             LogEvent.log_error(ex)

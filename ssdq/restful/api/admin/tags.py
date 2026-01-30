@@ -2,73 +2,42 @@ from ....models.dict import tags
 from ....models.base import dq_control_tags_stat
 from ....logger.log import LogEvent
 from ....app.extensions import db
+from ..aggrid import AGGrid
 from flask import request
 from sqlalchemy import or_, String
 from .wtforms import TeamDictForm
 
 
+ALLOWED_COLS = {
+    "id": tags.id,
+    "name": tags.name,
+    "description": tags.description,
+    "tag_type": tags.tag_type
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
+
+
 class Tags():
     def __init__(self):
-        pass
+        self.grid = AGGrid(
+            obj=tags,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS
+        )
+        
+    def get_grid(self):
+        return self.grid.get_grid(base_filters={"teamId": tags.team_id})
 
-    @staticmethod
-    def get_datatable():
-        try:
-            team_id = request.args.get("teamId")
-            attributes = {
-                0: tags.id,
-                1: tags.name,
-                2: tags.description
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = tags.id
-
-            query = db.session.query(
-                tags.id,
-                tags.name,
-                tags.description
-            )
-            if search:
-                query = query.filter(
-                    tags.team_id == team_id,
-                    or_(
-                        tags.id.cast(String).ilike(search),
-                        tags.name.ilike(search),
-                        tags.description.ilike(search)
-                    )
-                )
-            else:
-                query = query.filter_by(team_id=team_id)
-
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                name=row.name,
-                description=row.description
-            ) for row in dataset]
-
-            total_records = int(tags.query.filter_by(team_id=team_id).count())
-            total_record_filtered = total_records if search is None else int(query.count())
-
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="tags.csv",
+            base_filters={"teamId": tags.team_id},
+        )
 
     @staticmethod
     def add():
@@ -78,7 +47,8 @@ class Tags():
                 entity = tags(
                     name=form.name.data,
                     description=form.description.data,
-                    team_id=form.team_id.data
+                    team_id=form.team_id.data,
+                    tag_type=form.tag_type.data
                 )
                 db.session.add(entity)
                 db.session.commit()
@@ -97,7 +67,8 @@ class Tags():
             if form.validate():
                 entity = tags.query.filter_by(id=id).update(dict(
                     name=form.name.data,
-                    description=form.description.data
+                    description=form.description.data,
+                    tag_type=form.tag_type.data
                 ))
                 db.session.commit()
                 LogEvent.log_event(eventName="updateEntity", entityName="tags", entityId=str(id))

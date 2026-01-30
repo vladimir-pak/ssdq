@@ -9,7 +9,7 @@ from .logging import DefaultLoggingConfigurator
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Application config
-APP_PORT = 5000
+APP_PORT = 9100
 WORKERS = 4
 CERT_FILE = "/opt/ssdq/cert/certfile.cert"
 CERT_KEY = "/opt/ssdq/cert/decrypted.key"
@@ -20,9 +20,9 @@ FERNET_KEY = "Bwa3ZaGPqY0wLj13D_7fb8LMRgPgY-TMptjOcXAK8q0="
 
 # The SQLAlchemy connection string.
 
-SQLALCHEMY_DATABASE_URI = ''
+SQLALCHEMY_DATABASE_URI = 'postgresql://ssdq:ssdq_pass@localhost:5432/ssdq'
 SQLALCHEMY_BINDS = {
-    "audit_db": ''
+    "audit_db": 'postgresql://ssdq:ssdq_pass@localhost:5432/audit'
 }
 SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "json_serializer": partial(json.dumps, ensure_ascii=False)}
 

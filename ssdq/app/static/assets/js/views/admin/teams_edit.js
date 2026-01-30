@@ -57,27 +57,6 @@ const setPageData = () => {
     $("#description").val(data.data.description);
 };
 
-var dataTab = $("#users").DataTable({
-    processing: true,
-    serverSide: true,
-    serverMethod: 'post',
-    ajax: {
-        url: `/api/admin/teams/${$("#id").val()}`,
-        headers: {"X-CSRFToken": csrf_token}
-    },
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    searching: true,
-    sort: true,
-    order: [0,'asc'],
-    autoWidth: false,
-    responsive: false,
-    columns: cols,
-    oLanguage: {
-        sProcessing: `<div class="spinner-border text-success" style="width: 6rem; height: 6rem;"></div>`,
-        sEmptyTable: "Нет данных"
-    }
-});
-
 $("#update").on('click', function() {
     let formData = {
         name: $("#name").val(),

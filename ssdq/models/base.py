@@ -27,11 +27,14 @@ class dq_control_sdim(Base):
     critical_level = Column(String(10))
     alerting_type_id = Column(Integer)
     jira_mode_id = Column(Integer)
+    characteristic_id = Column(UUID(as_uuid=True))
+    team_attributes = Column(JSON)
 
     def __init__(self, id=None, name=None, description=None, conditions=None, segment_id=None, source_id=None,
                  status_id=None, wiki=None, team_id=None, created_by=None, deleted_flag=None,
                  updated_at=None, threshold_min=None, threshold_max=None, control_type_id=None, 
                  subject_area_id=None, critical_level=None, alerting_type_id=None, jira_mode_id=None,
+                 characteristic_id=None, team_attributes=None,
                  **kwargs):
         self.id = id
         self.name = name
@@ -52,6 +55,8 @@ class dq_control_sdim(Base):
         self.critical_level = critical_level
         self.alerting_type_id = alerting_type_id
         self.jira_mode_id = jira_mode_id
+        self.characteristic_id = characteristic_id
+        self.team_attributes = team_attributes
 
     def __repr__(self):
         return '<dq_control_sdim %r>' % (self.id)
@@ -79,31 +84,8 @@ class dq_control_hist(Base):
     jira_mode_id = Column(Integer)
     effective_from = Column(DateTime)
     effective_to = Column(DateTime, default=datetime.now())
-
-    def __init__(self, id=None, name=None, description=None, conditions=None, segment_id=None, source_id=None,
-                 status_id=None, wiki=None, team_id=None, created_by=None,
-                 threshold_min=None, threshold_max=None, control_type_id=None, 
-                 subject_area_id=None, critical_level=None, alerting_type_id=None, jira_mode_id=None,
-                 effective_from=None, effective_to=None):
-        self.id = id
-        self.name = name
-        self.description = description
-        self.conditions = conditions
-        self.segment_id = segment_id
-        self.source_id = source_id
-        self.status_id = status_id
-        self.wiki = wiki
-        self.team_id = team_id
-        self.created_by = created_by
-        self.threshold_min = threshold_min
-        self.threshold_max = threshold_max
-        self.control_type_id = control_type_id
-        self.subject_area_id = subject_area_id
-        self.critical_level = critical_level
-        self.alerting_type_id = alerting_type_id
-        self.jira_mode_id = jira_mode_id
-        self.effective_from = effective_from
-        self.effective_to = effective_to
+    characteristic_id = Column(UUID(as_uuid=True))
+    team_attributes = Column(JSON)
 
     def __repr__(self):
         return '<dq_control_sdim %r>' % (self.id)
@@ -134,33 +116,6 @@ class dq_monitoring_view(Base):
     expiring_date = Column(Date)
     critical_level = Column(String(10))
 
-    def __init__(self, id=None, name=None, object_name=None, owner=None, owner_name=None, status_name=None,
-                 run_id=None, last_start=None, last_result=None, overflow_start=None, overflow_result=None,
-                 description=None, rule_description=None, overflow_run_id=None,
-                 need_act=None, dqi_id=None, status_id=None, team_id=None, team_name=None, 
-                 expiring_date=None, critical_level=None):
-        self.id = id
-        self.name = name
-        self.object_name = object_name
-        self.owner = owner
-        self.owner_name = owner_name
-        self.status_name = status_name
-        self.run_id = run_id
-        self.last_start = last_start
-        self.last_result = last_result
-        self.overflow_start = overflow_start
-        self.overflow_result = overflow_result
-        self.description = description
-        self.rule_description = rule_description
-        self.overflow_run_id = overflow_run_id
-        self.need_act = need_act
-        self.dqi_id = dqi_id
-        self.status_id = status_id
-        self.team_id = team_id
-        self.team_name = team_name
-        self.expiring_date = expiring_date
-        self.critical_level = critical_level
-
     def __repr__(self):
         return '<dq_monitoring_view %r >' % self.id
 
@@ -181,21 +136,6 @@ class dq_detail_agg(Base):
     workflow_name = Column(String(155))
     error_name = Column(String(2000))
 
-    def __init__(self, control_id=None, pm_workflow_run_id=None, description=None, mistake_count=None, 
-                 report_date=None, start_time=None, end_time=None, error_flag=None, 
-                 out_of_margins_flag=None, workflow_name=None, error_name=None):
-        self.control_id = control_id
-        self.pm_workflow_run_id = pm_workflow_run_id
-        self.description = description
-        self.mistake_count = mistake_count
-        self.report_date = report_date
-        self.start_time = start_time
-        self.end_time = end_time
-        self.error_flag = error_flag
-        self.out_of_margins_flag = out_of_margins_flag
-        self.workflow_name = workflow_name
-        self.error_name = error_name
-
     def __repr__(self):
         return '<dq_detail_agg %r %r %r %r>' % (
             self.control_id, self.mistake_count, self.report_date, self.pm_workflow_run_id)
@@ -211,15 +151,6 @@ class dq_detailjournal_web(Base):
     pm_workflow_run_id = Column(Integer)
     json = Column(JSON)
 
-    def __init__(self, control_id=None, error_flag=None, report_time=None,
-                 xk=None, pm_workflow_run_id=None, json=None):
-        self.control_id = control_id
-        self.error_flag = error_flag
-        self.report_time = report_time
-        self.xk = xk
-        self.pm_workflow_run_id = pm_workflow_run_id
-        self.json = json
-
     def __repr__(self):
         return '<dq_detailjournal_web %r %r>' % (self.control_id, self.pm_workflow_run_id)
 
@@ -230,11 +161,6 @@ class dq_alerting_stat(Base):
     control_id = Column(Integer, primary_key=True)
     user_id = Column(UUID(as_uuid=True), primary_key=True)
     updated_at = Column(DateTime, default=datetime.now())
-
-    def __init__(self, control_id=None, user_id=None, updated_at=None):
-        self.control_id = control_id
-        self.user_id = user_id
-        self.updated_at = updated_at
 
     def __repr__(self):
         return '<dq_alerting_stat %r %r>' % (self.control_id, self.user_id)
@@ -256,22 +182,6 @@ class dq_dag_sdim(Base):
     params = Column(JSON)
     limit = Column(Boolean, default=True)
 
-    def __init__(self, control_id=None, sql=None, cron=None, source=None, 
-                 load_end=None, updated_at=None, deleted_flag=None, crossdb_flag=None,
-                 dag_type=None, pattern_id=None, params=None, limit=None):
-        self.control_id = control_id
-        self.sql = sql
-        self.cron = cron
-        self.load_end = load_end
-        self.source = source
-        self.deleted_flag = deleted_flag
-        self.crossdb_flag = crossdb_flag
-        self.updated_at = updated_at
-        self.dag_type = dag_type
-        self.pattern_id = pattern_id
-        self.params = params
-        self.limit = limit
-
     def __repr__(self):
         return '<dq_dag_sdim %r %r>' % (
             self.control_id,
@@ -290,16 +200,6 @@ class dq_dag_crossdb_sdim(Base):
     updated_at = Column(DateTime, default=datetime.now())
     deleted_flag = Column(String(1), default="N")
 
-    def __init__(self, control_id=None, sql=None, source=None, custom_source_name=None, main_sql=None,
-                 updated_at=None, deleted_flag=None):
-        self.control_id = control_id
-        self.sql = sql
-        self.source = source
-        self.custom_source_name = custom_source_name
-        self.main_sql = main_sql
-        self.updated_at = updated_at
-        self.deleted_flag = deleted_flag
-
     def __repr__(self):
         return '<dq_dag_crossdb_sdim %r>' % (
             self.control_id)
@@ -314,12 +214,6 @@ class view_all_controls_bymonth(Base):
     status_id = Column(Integer)
     team_id = Column(UUID(as_uuid=True))
 
-    def __init__(self, thedate=None, id=None, status_id=None, team_id=None):
-        self.thedate = thedate
-        self.id = id
-        self.status_id = status_id
-        self.team_id = team_id
-
     def __repr__(self):
         return '<view_all_controls_bymonth %r %r %r>' % (self.thedate, self.id, self.status_id)
 
@@ -331,11 +225,6 @@ class view_controls_error_bymonth(Base):
     report_date = Column(Date, primary_key=True)
     id = Column(Integer, primary_key=True)
     team_id = Column(UUID(as_uuid=True))
-
-    def __init__(self, report_date=None, id=None, team_id=None):
-        self.report_date = report_date
-        self.id = id
-        self.team_id = team_id
 
     def __repr__(self):
         return '<view_controls_error_bymonth %r %r>' % (
@@ -353,14 +242,6 @@ class view_controls_last_results(Base):
     error_flag = Column(String(1))
     status_id = Column(Integer)
 
-    def __init__(self, id=None, pm_workflow_run_id=None, mistake_count=None, end_time=None, error_flag=None, status_id=None):
-        self.id = id
-        self.pm_workflow_run_id = pm_workflow_run_id
-        self.mistake_count = mistake_count
-        self.end_time = end_time
-        self.error_flag = error_flag
-        self.status_id = status_id
-
     def __repr__(self):
         return '<view_controls_last_results %r %r %r %r %r %r>' % (
             self.id, self.pm_workflow_run_id, self.mistake_count, self.end_time, self.error_flag, self.status_id)
@@ -374,11 +255,6 @@ class dq_control_owner_stat(Base):
     owner_id = Column(UUID(as_uuid=True), primary_key=True)
     updated_at = Column(DateTime, default=datetime.now())
 
-    def __init__(self, control_id=None, owner_id=None, updated_at=None):
-        self.control_id = control_id
-        self.owner_id = owner_id
-        self.updated_at = updated_at
-
     def __repr__(self):
         return '<dq_control_owner_stat %r>' % (self.control_id, self.owner_id)
 
@@ -390,11 +266,6 @@ class dq_control_object_stat(Base):
     control_id = Column(Integer, primary_key=True)
     object_id = Column(UUID(as_uuid=True), primary_key=True)
     updated_at = Column(DateTime, default=datetime.now())
-
-    def __init__(self, control_id=None, object_id=None, updated_at=None):
-        self.control_id = control_id
-        self.object_id = object_id
-        self.updated_at = updated_at
 
     def __repr__(self):
         return '<dq_control_object_stat %r>' % (self.control_id, self.object_id)
@@ -410,13 +281,6 @@ class dq_jira_issues(Base):
     json = Column(JSON)
     updated_at = Column(DateTime, default=datetime.now())
 
-    def __init__(self, pm_workflow_run_id=None, xk=None, jira_issue=None, json=None, updated_at=None):
-        self.pm_workflow_run_id = pm_workflow_run_id
-        self.xk = xk
-        self.jira_issue = jira_issue
-        self.json = json
-        self.updated_at = updated_at
-
     def __repr__(self):
         return '<dq_jira_issues %r>' % (self.pm_workflow_run_id, self.xk, self.jira_issue)
 
@@ -428,11 +292,6 @@ class featured_controls(Base):
     user_id = Column(UUID(as_uuid=True), primary_key=True)
     control_id = Column(Integer)
     updated_at = Column(DateTime, default=datetime.now())
-
-    def __init__(self, user_id=None, control_id=None, updated_at=None):
-        self.user_id = user_id
-        self.control_id = control_id
-        self.updated_at = updated_at
 
     def __repr__(self):
         return '<featured_controls %r>' % (self.user_id, self.control_id)
@@ -449,15 +308,6 @@ class dq_validation_stat(Base):
     emailed = Column(Boolean, default=False)
     validation_type_id = Column(Integer)
 
-    def __init__(self, control_id=None, disabled=None, disable_date=None, updated_at=None, 
-                 emailed=False, validation_type_id=None):
-        self.control_id = control_id
-        self.disabled = disabled
-        self.disable_date = disable_date
-        self.updated_at = updated_at
-        self.emailed = emailed
-        self.validation_type_id = validation_type_id
-
     def __repr__(self):
         return '<dq_validation_stat %r>' % (self.control_id)
 
@@ -469,11 +319,6 @@ class dq_control_tags_stat(Base):
     control_id = Column(Integer, primary_key=True)
     tag_id = Column(UUID(as_uuid=True), primary_key=True)
     updated_at = Column(DateTime, default=datetime.now())
-
-    def __init__(self, control_id=None, tag_id=None, updated_at=None):
-        self.control_id = control_id
-        self.tag_id = tag_id
-        self.updated_at = updated_at
 
     def __repr__(self):
         return '<dq_control_tags_stat %r>' % (self.control_id, self.tag_id)

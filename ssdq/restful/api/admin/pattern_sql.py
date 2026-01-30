@@ -3,15 +3,45 @@ from ....models.base import dq_dag_sdim
 from ....logger.log import LogEvent
 from ....app.extensions import db
 from ....integration.airflow import Dag
+from ..aggrid import AGGrid
 from flask import request
 from sqlalchemy import or_, String
 from .wtforms import PatternDictForm
 import json
 
 
+ALLOWED_COLS = {
+    "id": dq_pattern_sdim.id,
+    "name": dq_pattern_sdim.name,
+    "description": dq_pattern_sdim.description,
+    "deleted_flag": dq_pattern_sdim.deleted_flag,
+    "sql": dq_pattern_sdim.sql,
+    "params": dq_pattern_sdim.params
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
+
+
 class PatternSql():
     def __init__(self):
-        pass
+        self.grid = AGGrid(
+            obj=dq_pattern_sdim,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS
+        )
+        
+    def get_grid(self):
+        return self.grid.get_grid(base_filters={"teamId": dq_pattern_sdim.team_id})
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="dq_pattern_sdim.csv",
+            base_filters={"teamId": dq_pattern_sdim.team_id},
+        )
 
     @staticmethod
     def get_datatable():

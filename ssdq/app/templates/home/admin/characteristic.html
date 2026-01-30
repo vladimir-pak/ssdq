@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Справочник "Предметные области" {% endblock %}
+{% block title %} Справочник "Характеристика КД" {% endblock %}
 
 <!-- Element injected in the BODY element -->
 {% block body_class %} sidebar-mini {% endblock body_class %}
@@ -18,6 +18,9 @@
 <!-- Theme style -->
 <link rel="stylesheet" href="/static/assets/css/select_rows.css">
 
+<!-- <link rel="stylesheet" href="/static/assets/node_modules/ag-grid-community/styles/ag-grid.css" />
+<link rel="stylesheet" href="/static/assets/node_modules/ag-grid-community/styles/ag-theme-quartz.css" /> -->
+
 {% endblock stylesheets %}
 
 {% block content %}
@@ -28,7 +31,7 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Предметная область</h1>
+          <h1>Cегменты</h1>
         </div>
       </div>
     </div><!-- /.container-fluid -->
@@ -42,9 +45,9 @@
           <form method="post">
             <div class="card card-success card">
               <div class="card-header bg-primary">
-                <h3 class="card-title">Добавление предметной области</h3>
+                <h3 class="card-title">Добавление характеристики</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-toggle="collapse" data-target="#cardBody">
+                  <button class="btn btn-tool" data-toggle="collapse" data-target="#cardBody">
                     <i class="fas fa-minus"></i>
                   </button>
                 </div>
@@ -56,41 +59,31 @@
                       <label>ID</label>
                       <input type="text" class="form-control" id="id" name="id" readonly>
                     </div>
-                    <div class="form-group">
-                      <label>Команда</label>
-                      <select class="form-control" id="team_id" name="team_id" onchange="" required>
-                        {% for team in teams %}
-                        <option value="{{team.id}}" {% if current_user.team_id == team.id %}selected{% endif %}>{{team.name}}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
                   </div>
                   <div class="col-sm-6">
                     <div class="form-group">
                       <label>Наименование</label>
                       <input type="text" class="form-control" id="name" name="name" required
-                      {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}>
+                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
                     </div>
                     <div class="form-group">
                       <label>Описание</label>
                       <textarea class="form-control" id="description" name="description" style="height: 123px;" required
-                      {% if current_user.role_name in ["User", "AdminSec"] %} readonly {% endif %}></textarea>
+                      {% if current_user.role_name != "Admin" %} readonly {% endif %}></textarea>
                     </div>
                   </div>
                 </div>
                 
                 <div class="row">
                   <div class="col-sm-6">
-                    {% if current_user.admin or "TeamOwner" in current_user.role_name %}
+                    {% if current_user.admin %}
                     <button type="button" style="float:left; width:25%;" class="btn btn-outline-primary" id="add">Добавить</button>
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="update">Изменить</button>
-                    <button type="button" style="float:right; width:25%; display:none;" class="btn btn-outline-primary" id="restore">Восстановить</button>
                     {% endif %}
                   </div>
                   <div class="col-sm-6">
-                    {% if current_user.admin or "TeamOwner" in current_user.role_name %}
-                    <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="remove">Удалить</button>
-                    <button type="button" style="float:left; width:25%; display:none; margin-left: 2vw;" class="btn btn-outline-primary" id="hardRemove">Удалить навсегда</button>
+                    {% if current_user.admin %}
+                    <button type="button" style="float:left; width:25%; display:none; margin-left: 2vw;" class="btn btn-outline-primary" id="hardRemove">Удалить</button>
                     {% endif %}
                     <button type="button" style="float:right; width:25%" class="btn btn-outline-primary" onclick="location.href='/admin';">Выход</button>
                   </div>
@@ -102,9 +95,8 @@
           </form>
           <div class="card card-success">
             <div class="card-header bg-primary">
-              <h3 class="card-title">Все предметные области</h3>
+              <h3 class="card-title">Все характеристики КД</h3>
             </div>
-            <!-- /.card-header -->
             <div class="card-body">
               <div style="display:flex; gap:12px; align-items:center; margin-bottom: 10px;">
                 <button id="btnResetFilters" class="btn btn-outline-primary">Сброс фильтров</button>
@@ -112,12 +104,13 @@
                 <button id="btnExportCsv" class="btn btn-outline-primary">Экспорт CSV (всё по фильтрам)</button>
               </div>
 
-              <div id="subjectAreaGrid" class="ag-theme-quartz" style="height: 700px; width: 100%;"></div>
+              <div id="characteristicGrid" class="ag-theme-quartz" style="height: 700px; width: 100%;"></div>
             </div>
           </div>
         </div>
       </div>
     </div>
+      <!-- /.row --><!-- /.container-fluid -->
   </section>
   <!-- /.content -->
 </div>
@@ -135,11 +128,10 @@
 <!-- Bootstrap 4 -->
 <script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
-<!-- DataTables -->
-<script src="/static/assets/node_modules/ag-grid-community/dist/ag-grid-community.min.js"></script>
+
 <script src="/static/assets/js/datatable_handler/utils.js"></script>
+<script src="/static/assets/node_modules/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script src="/static/assets/js/ag_grid/toggle_columns.js"></script>
 <script src="/static/assets/js/ag_grid/utils.js"></script>
-<script src="/static/assets/js/views/admin/subject_area.js"></script>
-
+<script src="/static/assets/js/views/admin/characteristic.js"></script>
 {% endblock javascripts %}

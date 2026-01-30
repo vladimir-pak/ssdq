@@ -49,12 +49,12 @@
               <div class="card-header bg-primary">
                 <h3 class="card-title">Редактирование пользователя</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                  <button type="button" class="btn btn-tool" data-toggle="collapse" data-target="#cardBody">
                     <i class="fas fa-minus"></i>
                   </button>
                 </div>
               </div>
-              <div class="card-body">
+              <div class="card-body collapse show" id="cardBody">
                 <div class="row">
                   <div class="col-sm-6">
                     <div class="form-group">
@@ -65,12 +65,17 @@
                       <label>Команда</label>
                       <select class="form-control" id="team_id" name="team_id" required
                       {% if current_user.role_name != "Admin" %} readonly {% endif %}>
+                        {% for team in teams %}
+                        <option value="{{team.id}}" {% if current_user.team_id == team.id %}selected{% endif %}>{{team.name}}</option>
+                        {% endfor %}
                       </select>
                     </div>
                     <div class="form-group">
                       <label>Роль</label>
-                      <select class="form-control" id="role" name="role" required
-                      {% if current_user.role_name != "Admin" %} readonly {% endif %}>
+                      <select class="form-control" id="role" name="role" required readonly>
+                        {% for role in roles %}
+                        <option value="{{role.id}}" {% if current_user.role_name == role.name %}selected{% endif %}>{{role.name}}</option>
+                        {% endfor %}
                       </select>
                     </div>
                   </div>
@@ -110,24 +115,17 @@
             <div class="card-header bg-primary">
               <h3 class="card-title">Все пользователи</h3>
             </div>
-            <!-- /.card-header -->
             <div class="card-body">
-              <table id="users" class="table table-bordered table-striped">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Имя</th>
-                    <th>Email</th>
-                    <th>Роль</th>
-                    <th>Команда</th>
-                  </tr>
-                </thead>
-              </table>
+              <div style="display:flex; gap:12px; align-items:center; margin-bottom: 10px;">
+                <button id="btnResetFilters" class="btn btn-outline-primary">Сброс фильтров</button>
+                <button id="btnResetColumns" class="btn btn-outline-primary">Сброс колонок</button>
+                <button id="btnExportCsv" class="btn btn-outline-primary">Экспорт CSV (всё по фильтрам)</button>
+              </div>
+
+              <div id="usersGrid" class="ag-theme-quartz" style="height: 700px; width: 100%;"></div>
             </div>
-            <!-- /.card-body -->
           </div>
         </div>
-        <!--/.col (right) -->
       </div>
       <!-- /.row -->
     </div><!-- /.container-fluid -->
@@ -150,13 +148,10 @@
 <script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
 <!-- DataTables -->
-<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-
 <script src="/static/assets/js/datatable_handler/utils.js"></script>
-<script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
+<script src="/static/assets/node_modules/ag-grid-community/dist/ag-grid-community.min.js"></script>
+<script src="/static/assets/js/ag_grid/toggle_columns.js"></script>
+<script src="/static/assets/js/ag_grid/utils.js"></script>
 <script src="/static/assets/js/views/admin/users.js"></script>
 
 {% endblock javascripts %}

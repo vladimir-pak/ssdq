@@ -1,72 +1,31 @@
 from ....models.dict import dq_control_type_sdim
 from ....logger.log import LogEvent
 from ....app.extensions import db
-from flask import request
-from sqlalchemy import or_, String
+from ..aggrid import AGGrid
 from .wtforms import SysDictForm
+
+
+ALLOWED_COLS = {
+    "id": dq_control_type_sdim.id,
+    "name": dq_control_type_sdim.name,
+    "description": dq_control_type_sdim.description,
+    "deleted_flag": dq_control_type_sdim.deleted_flag
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
 
 
 class AdminControlType():
     def __init__(self):
-        pass
-        
-    @staticmethod
-    def get_datatable():
-        try:
-            attributes = {
-                0: dq_control_type_sdim.id,
-                1: dq_control_type_sdim.name,
-                2: dq_control_type_sdim.description,
-                3: dq_control_type_sdim.deleted_flag
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = dq_control_type_sdim.id
-            
-            query = db.session.query(
-                dq_control_type_sdim.id,
-                dq_control_type_sdim.name,
-                dq_control_type_sdim.description,
-                dq_control_type_sdim.deleted_flag
-            )
-            if search:
-                query = query.filter(
-                    or_(
-                        dq_control_type_sdim.id.cast(String).ilike(search),
-                        dq_control_type_sdim.name.ilike(search),
-                        dq_control_type_sdim.description(search)
-                    )
-                )
-            
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                name=row.name,
-                description=row.description,
-                deleted_flag=row.deleted_flag
-            ) for row in dataset]
-            
-            total_records = int(dq_control_type_sdim.query.count())
-            total_record_filtered = total_records if search is None else int(query.count())
-            
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-        
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
+        self.grid = AGGrid(
+            obj=dq_control_type_sdim,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS
+        )
 
     @staticmethod
     def add():
@@ -128,3 +87,11 @@ class AdminControlType():
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
+        
+    def get_grid(self):
+        return self.grid.get_grid()
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="dq_control_type_sdim.csv"
+        )

@@ -1,80 +1,33 @@
 from ....models.dict import dq_object_sdim
 from ....logger.log import LogEvent
 from ....app.extensions import db
-from flask import request
-from sqlalchemy import or_, String
+from ..aggrid import AGGrid
 from .wtforms import ObjectsForm
+
+
+ALLOWED_COLS = {
+    "id": dq_object_sdim.id,
+    "base_name": dq_object_sdim.base_name,
+    "schema": dq_object_sdim.schema,
+    "table_name": dq_object_sdim.table_name,
+    "description": dq_object_sdim.description,
+    "deleted_flag": dq_object_sdim.deleted_flag
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
 
 
 class AdminObjects():
     def __init__(self):
-        pass
-        
-    @staticmethod
-    def get_datatable():
-        try:
-            attributes = {
-                0: dq_object_sdim.id,
-                1: dq_object_sdim.base_name,
-                2: dq_object_sdim.schema,
-                3: dq_object_sdim.table_name,
-                4: dq_object_sdim.description,
-                5: dq_object_sdim.deleted_flag
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = dq_object_sdim.id
-            
-            query = db.session.query(
-                dq_object_sdim.id,
-                dq_object_sdim.base_name,
-                dq_object_sdim.schema,
-                dq_object_sdim.table_name,
-                dq_object_sdim.description,
-                dq_object_sdim.deleted_flag
-            )
-            if search:
-                query = query.filter(
-                    or_(
-                        dq_object_sdim.id.cast(String).ilike(search),
-                        dq_object_sdim.base_name.ilike(search),
-                        dq_object_sdim.schema.ilike(search),
-                        dq_object_sdim.table_name.ilike(search),
-                        dq_object_sdim.description.ilike(search)
-                    )
-                )
-            
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                base_name=row.base_name,
-                schema=row.schema,
-                table_name=row.table_name,
-                description=row.description,
-                deleted_flag=row.deleted_flag
-            ) for row in dataset]
-            
-            total_records = int(dq_object_sdim.query.count())
-            total_record_filtered = total_records if search is None else int(query.count())
-            
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-        
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
+        self.grid = AGGrid(
+            obj=dq_object_sdim,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS
+        )
 
     @staticmethod
     def add():
@@ -140,3 +93,11 @@ class AdminObjects():
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
+        
+    def get_grid(self):
+        return self.grid.get_grid()
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="dq_object_sdim.csv"
+        )

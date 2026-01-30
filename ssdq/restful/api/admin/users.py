@@ -1,122 +1,60 @@
 from flask import request
-from sqlalchemy import String, or_, and_
 from ....app.extensions import db
 from ....models.user import Users, user_roles, Roles, Teams
 from ....logger.log import LogEvent
+from ..aggrid import AGGrid
 
+
+ALLOWED_COLS = {
+    "id": Users.id,
+    "name": Users.name,
+    "email": Users.email,
+    "role_id": Roles.id,
+    "role_name": Roles.description,
+    "team_id": Teams.id,
+    "team_name": Teams.json["display_name"].as_string()
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
+
+# custom query for grid
+def users_base_query(payload):
+    team_id = payload.get("teamId")
+
+    q = db.session.query(
+        Users.id.label("id"),
+        Users.name.label("name"),
+        Users.email.label("email"),
+        Roles.id.label("role_id"),
+        Roles.description.label("role_name"),
+        Teams.id.label("team_id"),
+        Teams.json["display_name"].label("team_name"),
+    ).join(
+        Teams, Users.team_id == Teams.id
+    ).join(
+        user_roles, Users.id == user_roles.user_id
+    ).join(
+        Roles, user_roles.role_id == Roles.id
+    )
+
+    if team_id:
+        q = q.filter(Teams.id == team_id)
+
+    return q
+    
 
 class AdminUsers:
-    """
-    Class with users
-    """
-
     def __init__(self):
-        pass
-    
-    @staticmethod
-    def get_data():
-        try:
-            roles = Roles.query.all()
-            roles_dict = [dict(id=row.id, name=row.name) for row in roles]
-            
-            team_list = Teams.query.all()
-            teams_dict = [dict(id=row.id, name=row.json["display_name"]) for row in team_list]
-            return dict(roles=roles_dict, teams=teams_dict)
-        
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
-
-    @staticmethod
-    def get_datatable(team_id:str|None=None):
-        try:
-            attributes = {
-                0: Users.id,
-                1: Users.name,
-                2: Users.email,
-                3: Roles.description,
-                4: Teams.json["display_name"].cast(String)
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = Users.id
-            
-            query = Users.query.join(
-                Teams, and_(
-                    Users.team_id == Teams.id,
-                    Teams.id == team_id if team_id else True
-                )
-            ).join(
-                user_roles, Users.id == user_roles.user_id
-            ).join(
-                Roles, user_roles.role_id == Roles.id
-            ).add_columns(
-                Users.id,
-                Users.name,
-                Users.email,
-                Roles.description.label("role_name"),
-                Teams.json["display_name"].label("team_name")
-            )
-            if search:
-                query = query.filter(
-                    or_(
-                        Users.id.cast(String).ilike(search),
-                        Users.name.ilike(search),
-                        Users.email.ilike(search),
-                        Teams.json["display_name"].cast(String).ilike(search),
-                        Roles.description.ilike(search)
-                    )
-                )
-            
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                name=row.name,
-                email=row.email,
-                team_name=row.team_name,
-                role_name=row.role_name
-            ) for row in dataset]
-            
-            total_records = int(Users.query.filter_by(team_id=team_id).count()) if team_id else int(Users.query.filter(Users.team_id.isnot(None)).count())
-            total_record_filtered = total_records if search is None else int(query.count())
-            
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-        
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
-    
-    @staticmethod
-    def get_user_data(id):
-        try:
-            # role = user_roles.query.join(
-            #     Roles, user_roles.role_id == Roles.id
-            # ).add_columns(
-            #     user_roles.role_id,
-            #     Roles.name
-            # ).filter_by(user_id=id).first().name
-            # roles_dict = [dict(id=row.role_id, name=row.name) for row in roles]
-            role_id = db.session.query(user_roles.role_id).filter_by(user_id=id).first().role_id
-            
-            team_id = db.session.query(Users.team_id).filter_by(id=id).first().team_id
-            return dict(role_id=role_id, team_id=team_id)
-        
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
+        self.grid = AGGrid(
+            obj=Users,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            base_query_fn=users_base_query,
+            set_ops=SET_OPS,
+        )
 
     @staticmethod
     def update_user(id):
@@ -152,3 +90,11 @@ class AdminUsers:
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
+        
+    def get_grid(self):
+        return self.grid.get_grid()
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="users.csv"
+        )

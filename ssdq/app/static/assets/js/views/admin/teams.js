@@ -1,51 +1,138 @@
+const gridDiv = document.querySelector("#teamsGrid");
 
-/* DataTable start */
-const columns = [
-    {
-        data: 'name',
-        render: function (data, type, row) {
-            return `<a href="/admin/teams/${row.id}">${data}</a>`
-        }
-    },
-    {data: 'display_name'},
-    {data: 'description'},
-    {data: 'jira_project'},
-    {data: 'id'},
+const columnDefs = [
+    { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
+    { headerName: "Наименование", field: "name", colId: "name", filter: "agTextColumnFilter" },
+    { headerName: "Отображаемое наименование", field: "display_name", colId: "display_name", filter: "agTextColumnFilter" },
+    { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" },
+    { headerName: "Проект Jira", field: "jira_project", colId: "jira_project", filter: "agTextColumnFilter" }
 ];
 
-const attr = ['name', 'description', 'display_name', 'jira_project', 'id'];
 const toggleActiveList = ['hardRemove', 'edit'];
 
-var dataTab = new dataTableHandler(
-    'teams',
-    columns,
-    `api/admin/teams`,
-    'add',
-    toggleActiveList
-);
-dataTab.setTableDelay();
-
-const customFunc = () => {
-    if ($("#teams tbody").find('tr.selected').length) {
-        $("#name, #description, #display_name, #jira_project").prop("readonly", true);
+const rowHandler = (data, event) => {
+    if (data) {
+        $('#id').val(data.id);
+        $('#name').val(data.name);
+        $('#display_name').val(data.display_name);
+        $('#description').val(data.description);
+        $('#jira_project').val(data.jira_project);
     } else {
-        $("#name, #description, #display_name, #jira_project").prop("readonly", false);
+        $('#id').val('');
+        $('#name').val('');
+        $('#display_name').val('');
+        $('#description').val('');
+        $('#jira_project').val('');
+    }
+
+    if (event) {
+        window.AGGridUtils.setHidden('add');
+        deleted = data.deleted_flag == 'Y' ? true : false;
+
+        toggleActiveList.forEach((element) => {
+            deleted ? window.AGGridUtils.setHidden(element) : window.AGGridUtils.removeHidden(element);
+        });
+    } else {
+        toggleActiveList.forEach((element) => {
+            window.AGGridUtils.setHidden(element);
+        });
+        window.AGGridUtils.removeHidden('add');
+    }
+}
+
+function makeDatasource() {
+    return {
+        getRows: async (params) => {
+            try {
+                const body = {
+                    startRow: params.startRow,
+                    endRow: params.endRow,
+                    sortModel: params.sortModel,
+                    filterModel: params.filterModel,
+                };
+
+                const resp = await fetch("/api/admin/teams", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.csrf_token,
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                params.successCallback(data.rows, data.lastRow);
+                params.api.setGridOption("loading", false);
+            } catch (e) {
+                console.error(e);
+                params.failCallback();
+                params.api.setGridOption("loading", false);
+            }
+        },
     };
+}
+
+// кнопки — на странице, чтобы URL/filename были конкретными
+function wireButtons(params) {
+    document.querySelector("#btnResetFilters").addEventListener("click", () => {
+        params.api.setFilterModel(null);
+        params.api.onFilterChanged();
+        params.api.paginationGoToFirstPage();
+    });
+
+    document.querySelector("#btnResetColumns").addEventListener("click", () => {
+        params.api.resetColumnState();
+    });
+
+    document.querySelector("#btnExportCsv").addEventListener("click", async () => {
+        await window.AGGridUtils.exportCsvAll(params, {
+            url: "/api/admin/teams/csv",
+            filename: "teams.csv",
+            csrfToken: window.csrf_token,
+        });
+    });
+}
+
+const baseOptions = window.AGGridUtils.createBaseGridOptions({
+    headerComponent: HideableHeader,   // ваш компонент на этой странице
+    paginationPageSize: 20,
+    cacheBlockSize: 20,
+    maxBlocksInCache: 5,
+    onGridReady: (params) => {
+        params.api.setGridOption("loading", true);
+        params.api.setGridOption("datasource", makeDatasource());
+        wireButtons(params);
+    },
+});
+
+const gridOptions = {
+    ...baseOptions,
+    columnDefs,
+    onRowClicked: (event) => {
+        const node = event.node;
+        if (node.isSelected()) {
+            node.setSelected(false);
+            rowHandler(null);
+        } else {
+            event.api.deselectAll();
+            node.setSelected(true);
+            rowHandler(event.data, event);
+        }
+    },
 };
 
-dataTab.setRowHandler(attr, undefined, customFunc);
+const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
-var myTable = dataTab.getTable();
-
-/* DataTable end */
-
-/* Ajax to back for CRUD (start) */
+/* Ajax to back for CRUD */
+const inputAttributes = ['id', 'name', 'display_name', 'description', 'jira_project'];
 const requiredAttributes = ['name', 'description', 'display_name', 'jira_project'];
 
 var postRequests = new postRequests(
-    'Teams', // entity name
-    'Команда', // russian entity name
-    ['id', 'name', 'display_name', 'description', 'jira_project'] // list of inputs (create form to http request)
+    'Teams',
+    'Команда',
+    inputAttributes
 );
 
 $('#add, #hardRemove').on('click', function() {
@@ -59,8 +146,12 @@ $('#add, #hardRemove').on('click', function() {
         undefined,
         this.id == "add" ? "PUT" : "DELETE"
     );
-    dataTab.resetButtons(attr);
-    myTable.draw();
+    inputAttributes.forEach(e => {
+        $(`#${e}`).val('');
+    });
+    rowHandler(null);
+    gridApi.setGridOption("datasource", makeDatasource());
+    gridApi.paginationGoToFirstPage();
 });
 
 $("#edit").on("click", function() {

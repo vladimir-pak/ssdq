@@ -1,6 +1,6 @@
 const redirectCotrol = (action) => {
     let id = $('#controlId').val();
-    if (id == '0') {
+    if (id == '0' & action !== 'create') {
         Swal.fire({
             icon: 'error',
             title: 'Выберите контроль!',
@@ -19,9 +19,22 @@ const redirectCotrol = (action) => {
             url = `/controls/${id}/clone`;
         } else if (action == "report") {
             url = `/report/${id}`;
-        } else {
+        } else if (action == "create") {
+            url = `/controls/create`;
+        }else {
             url = `/controls?id=${id}`;
         };
         location.assign(url);
     };
 };
+
+$('#controlId').on('change', function() {
+    let id = $(this).val();
+    let url;
+    if (id == 0) {
+        url = '/controls';
+    } else {
+        url = `/controls?id=${id}`;
+    }
+    location.assign(url);
+});

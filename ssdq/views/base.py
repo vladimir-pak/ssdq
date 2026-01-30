@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from flask import render_template, Blueprint, current_app, request, session
 from ..controls.controls import Controls
 from ..logger.log import LogEvent, log_route
-from ..models.user import Teams
+from ..models.user import Teams, Roles
 from ..models.constants import DbType
 from ..app.dbconfig import ConfigSSDQ
 from ..security.access import roles_accepted, control_accepted, teams_accepted
@@ -71,7 +71,7 @@ def import_controls():
 @roles_accepted(["User", "TeamOwner"])
 @log_route()
 def monitoring(flt:str):
-    return render_template('home/monitoring.html', filter=flt)
+    return render_template('home/monitoring.html')
 
 @app_routes.route('/main', methods=['GET'])
 @login_required
@@ -99,49 +99,61 @@ def report_edit(id, wf_id):
                     jira_url=current_app.config["JIRA_URL"])
 
 """Admin routes"""
-@app_routes.route('/admin', methods=['GET'])
+@app_routes.get('/admin')
 @login_required
 @log_route()
 def admin_pn():
     return render_template('home/admin/admin.html')
 
-@app_routes.route('/admin/users', methods=['GET'])
+@app_routes.get('/admin/users')
 @login_required
-@roles_accepted(["AdminSec"])
+@roles_accepted(["User", "TeamOwner", "AdminSec"])
 @log_route()
 def admin_users():
-    return render_template('home/admin/users.html')
+    if current_user.admin or current_user.role_name == "AdminSec":
+        team_list = Teams.query.all()
+    else:
+        team_list = Teams.query.filter_by(id=current_user.team_id).all()
+    roles = Roles.query.all()
+    return render_template('home/admin/users.html', teams=team_list, roles=roles)
 
-@app_routes.route('/admin/teams', methods=['GET'])
+@app_routes.get('/admin/teams')
 @login_required
-@roles_accepted(["AdminSec"])
+@roles_accepted(["User", "TeamOwner", "AdminSec"])
 @log_route()
 def admin_teams():
     return render_template('home/admin/teams.html')
 
-@app_routes.route('/admin/teams/<string:id>', methods=['GET'])
+@app_routes.get('/admin/teams/<string:id>')
 @login_required
 @roles_accepted(["User", "TeamOwner", "AdminSec"])
 @log_route()
 def admin_change_team(id:str):
     return render_template('home/admin/change-team.html', id=id)
 
-@app_routes.route('/admin/objects', methods=['POST', 'GET'])
+@app_routes.get('/admin/objects')
 @login_required
 @roles_accepted(["User", "TeamOwner", "AdminSec"])
 @log_route()
 def adm_objects():
     return render_template('home/admin/objects.html')
 
-@app_routes.route('/admin/sources', methods=['POST', 'GET'])
+@app_routes.get('/admin/sources')
 @login_required
-@roles_accepted(["AdminSec"])
+@roles_accepted(["User", "TeamOwner", "AdminSec"])
 @log_route()
 def adm_sources():
     dbtypes = [cur.value for cur in DbType]
     return render_template('home/admin/sources.html', dbtypes=dbtypes)
 
-@app_routes.route('/admin/segments', methods=['POST', 'GET'])
+@app_routes.get('/admin/characteristic')
+@login_required
+@roles_accepted(["User", "TeamOwner", "AdminSec"])
+@log_route()
+def adm_characteristic():
+    return render_template('home/admin/characteristic.html')
+
+@app_routes.get('/admin/segments')
 @login_required
 @roles_accepted(["User", "AdminSec", "TeamOwner"])
 @log_route()
@@ -152,7 +164,7 @@ def adm_segments():
         team_list = Teams.query.filter_by(id=current_user.team_id).all()
     return render_template('home/admin/segments.html', teams=team_list)
 
-@app_routes.route('/admin/control-types', methods=['POST', 'GET'])
+@app_routes.get('/admin/control-types')
 @login_required
 @roles_accepted(["User", "AdminSec", "TeamOwner"])
 @log_route()
@@ -163,7 +175,7 @@ def adm_controltypes():
         team_list = Teams.query.filter_by(id=current_user.team_id).all()
     return render_template('home/admin/control-types.html', teams=team_list)
 
-@app_routes.route('/admin/error-reason', methods=['POST', 'GET'])
+@app_routes.get('/admin/error-reason')
 @login_required
 @roles_accepted(["User", "AdminSec", "TeamOwner"])
 @log_route()
@@ -174,7 +186,7 @@ def adm_errorreason():
         team_list = Teams.query.filter_by(id=current_user.team_id).all()
     return render_template('home/admin/error-reason.html', teams=team_list)
 
-@app_routes.route('/admin/subject-area', methods=['POST', 'GET'])
+@app_routes.get('/admin/subject-area')
 @login_required
 @roles_accepted(["User", "AdminSec", "TeamOwner"])
 @log_route()
@@ -185,7 +197,7 @@ def adm_subjectarea():
         team_list = Teams.query.filter_by(id=current_user.team_id).all()
     return render_template('home/admin/subject-area.html', teams=team_list)
 
-@app_routes.route('/admin/pattern-sql', methods=['POST', 'GET'])
+@app_routes.get('/admin/pattern-sql')
 @login_required
 @roles_accepted(["User", "AdminSec", "TeamOwner"])
 @log_route()
@@ -196,7 +208,7 @@ def adm_sqlpattern():
         team_list = Teams.query.filter_by(id=current_user.team_id).all()
     return render_template('home/admin/pattern-sql.html', teams=team_list)
 
-@app_routes.route('/admin/tags', methods=['POST', 'GET'])
+@app_routes.get('/admin/tags')
 @login_required
 @roles_accepted(["User", "AdminSec", "TeamOwner"])
 @log_route()
@@ -206,6 +218,17 @@ def adm_tags():
     else:
         team_list = Teams.query.filter_by(id=current_user.team_id).all()
     return render_template('home/admin/tags.html', teams=team_list)
+
+@app_routes.get('/admin/team-attributes')
+@login_required
+@roles_accepted(["User", "TeamOwner", "AdminSec"])
+@log_route()
+def adm_team_attributes():
+    if current_user.admin or current_user.role_name == "AdminSec":
+        team_list = Teams.query.all()
+    else:
+        team_list = Teams.query.filter_by(id=current_user.team_id).all()
+    return render_template('home/admin/team-attributes.html', teams=team_list)
 
 @app_routes.route('/config', methods=['GET','POST'])
 @login_required
@@ -218,7 +241,7 @@ def get_conf():
     else:
         return conf.update_config()
 
-@app_routes.route('/session/refresh', methods=['POST'])
+@app_routes.post('/session/refresh')
 @login_required
 @log_route()
 def refresh_session():
@@ -227,19 +250,21 @@ def refresh_session():
     """
     return {"lifetime": session["lifetime"]}, 200
 
-@app_routes.route('/groups-error', methods=['GET'])
+@app_routes.get('/groups-error')
 def groups_error():
     LogEvent.log_warning()
     return render_template('home/insufficient-privileges.html')
 
-@app_routes.route('/superset', methods=['GET'])
+@app_routes.get('/superset')
 def redirect_superset():
     return render_template('home/superset.html')
 
-@app_routes.route('/streamlit', methods=['GET'])
-@teams_accepted(current_app.config['STREAMLIT_ACCEPTANCE'])
+@app_routes.get('/streamlit')
 def redirect_streamlit():
-    return render_template('home/streamlit.html')
+    if current_user.team_name in current_app.config['STREAMLIT_ACCEPTANCE']:
+        return render_template('home/streamlit.html')
+    else:
+        return render_template('home/insufficient-privileges.html')
 
 @app_routes.before_request
 def auto_refresh_session():

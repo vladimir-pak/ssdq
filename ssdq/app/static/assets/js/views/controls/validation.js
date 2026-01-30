@@ -94,6 +94,10 @@ const pageToggle = () => {
     $(`#pdag, #pcard`).toggle();
 };
 
+const checkTeamAttributes = () => {
+    
+}
+
 const checkFill = (pageNumber, save=false) => {
     if (pageNumber == 1) {
         for (id of firstPageAttributes) {
@@ -112,6 +116,16 @@ const checkFill = (pageNumber, save=false) => {
         if (!save) {
             pageToggle();
         };
+
+        let valid = true;
+        $('#input-attributes input[name="param-values"]').each(function () {
+            if (!$(this).val()) {
+                showErrorFillMessage();
+                valid = false;
+                return false;
+            }
+        });
+        if (!valid) return false;
         return true;
     } else if (pageNumber == 2) {
         const hrefDagType = $("#panels li .nav-link.active").attr('href');

@@ -1,0 +1,11 @@
+.fa-toggle {
+    cursor: pointer;
+    font-size: 1.6rem;
+    color: #aaa;
+    transition: color 0.3s ease, transform 0.25s ease;
+}
+
+.fa-toggle.active {
+    color: #4CAF50;
+    transform: scale(1.1);
+}

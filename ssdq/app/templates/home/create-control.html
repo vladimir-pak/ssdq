@@ -135,6 +135,19 @@
                                                         </select>
                                                     </div>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label for="subject_area">Характеристика КД</label>
+                                                    <div id="characteristic">
+                                                        <select class="form-control"
+                                                                style="width: 100%;" id="characteristic_id"
+                                                                name="characteristic_id">
+                                                                <option selected disabled></option>
+                                                                {% for char in characteristic %}
+                                                                    <option value={{char.id}}>{{char.name}}</option>
+                                                                {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="col-sm-6">
                                                 <div class="form-group">
@@ -260,6 +273,18 @@
                                             </tr>
                                             </tbody>
                                         </table>
+                                        <button type="button" class="btn btn-block btn-default js-toggle-btn mb-2">Атрибуты команды</button>
+                                        <div>
+                                            <div class="row" style="justify-content: space-around;">
+                                                <button type="button" class="btn btn-outline-primary" onclick="addAttribute()">Добавить атрибут</button>
+                                                <button type="button" class="btn btn-outline-primary" onclick="removeAttr()">Удалить атрибут</button>
+                                            </div>
+                                            <div id="attributes" class="form-group row">
+                                                <div class="col-lg-5 mt-2"><label class="ml-2">Наименование Атрибута</label></div>
+                                                <div class="col-lg-6 mt-2"><label>Значение атрибута</label></div>
+                                                <div class="col-lg-12 mb-3" id="input-attributes"></div>
+                                            </div>
+                                        </div>
                                         <div class="row">
                                             <div class="col-sm-12">
                                                 <div class="form-group">
@@ -716,10 +741,12 @@
 <script src="/static/assets/node_modules/moment/min/moment.min.js"></script>
 <script src="/static/assets/node_modules/inputmask/dist/jquery.inputmask.min.js"></script>
 <script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+<script src="/static/assets/js/views/controls/team_attributes.js"></script>
 <script src="/static/assets/js/views/controls/handleChanges.js"></script>
 <script src="/static/assets/js/views/controls/validation.js"></script>
 <script src="/static/assets/js/views/controls/controls.js"></script>
 <script src="/static/assets/js/views/controls/create_control.js"></script>
 <script src="/static/assets/js/views/controls/utils.js"></script>
+
 
 {% endblock javascripts %}

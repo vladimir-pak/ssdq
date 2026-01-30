@@ -8,6 +8,8 @@ from .source import AdminSources
 from .subject_area import AdminSubjectArea
 from .pattern_sql import PatternSql
 from .tags import Tags
+from .characteristic import AdminCharacteristic
+from .team_attributes import AdminTeamAttributes
 
 
 __all__ = [
@@ -21,5 +23,7 @@ __all__ = [
     AdminSegments,
     AdminSources,
     PatternSql,
-    Tags
+    Tags,
+    AdminCharacteristic,
+    AdminTeamAttributes
 ]

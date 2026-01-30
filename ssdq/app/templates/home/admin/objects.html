@@ -48,12 +48,12 @@
               <div class="card-header bg-primary">
                 <h3 class="card-title">Редактирование</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                  <button type="button" class="btn btn-tool" data-toggle="collapse" data-target="#cardBody">
                     <i class="fas fa-minus"></i>
                   </button>
                 </div>
               </div>
-              <div class="card-body">
+              <div class="card-body collapse show" id="cardBody">
                 <div class="row">
                   <div class="col-sm-6">
                     <div class="form-group">
@@ -112,20 +112,13 @@
               <h3 class="card-title">Все объекты</h3>
             </div>
             <div class="card-body">
-              <div id="table">
-                <table id="objects" class="table table-bordered table-striped">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>База данных</th>
-                      <th>Схема</th>
-                      <th>Таблица</th>
-                      <th>Описание</th>
-                      <th>Удален</th>
-                    </tr>
-                  </thead>
-                </table>
+              <div style="display:flex; gap:12px; align-items:center; margin-bottom: 10px;">
+                <button id="btnResetFilters" class="btn btn-outline-primary">Сброс фильтров</button>
+                <button id="btnResetColumns" class="btn btn-outline-primary">Сброс колонок</button>
+                <button id="btnExportCsv" class="btn btn-outline-primary">Экспорт CSV (всё по фильтрам)</button>
               </div>
+
+              <div id="objectsGrid" class="ag-theme-quartz" style="height: 700px; width: 100%;"></div>
             </div>
           </div>
         </div>
@@ -149,13 +142,10 @@
 <script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
 <!-- DataTables -->
-<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-
 <script src="/static/assets/js/datatable_handler/utils.js"></script>
-<script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
+<script src="/static/assets/node_modules/ag-grid-community/dist/ag-grid-community.min.js"></script>
+<script src="/static/assets/js/ag_grid/toggle_columns.js"></script>
+<script src="/static/assets/js/ag_grid/utils.js"></script>
 <script src="/static/assets/js/views/admin/objects.js"></script>
 
 {% endblock javascripts %}

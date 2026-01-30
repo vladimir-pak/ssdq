@@ -1,99 +1,130 @@
-const apiData = (endpoint) => {
-    let url = window.location.protocol + '//' + window.location.host + '/api/' + endpoint;
-    var response;
-    $.ajax({
-        type: "GET",
-        url: url,
-        //data: body,
-        dataType: "json",
-        encode: true,
-        async: false
-    }).done(function (data) {
-        response = data;
-    }).fail(function (data) {
-        Swal.fire({
-            icon: 'error',
-            title: data.responseText,
-            position: 'top-end',
-            showConfirmButton: false,
-            toast: true,
-            timer: 3000
-        });
-    });
+const gridDiv = document.querySelector("#usersGrid");
 
-    return response;
-};
-
-const setPageData = () => {
-    let data = apiData("admin/users");
-    data.teams.map(e => {
-        $('#team_id').append($('<option>', {
-            value: e.id,
-            text: e.name,
-            selected: e.id == userTeamId ? true : false
-        }));
-    });
-    data.roles.map(e => {
-        $('#role').append($('<option>', {
-            value: e.id,
-            text: e.name
-        }));
-    });
-};
-
-/* DataTable start */
-const columns = [
-    {data: 'id'},
-    {data: 'name'},
-    {data: 'email'},
-    {data: 'role_name'},
-    {data: 'team_name'}
+const columnDefs = [
+    { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
+    { headerName: "ФИО", field: "name", colId: "name", filter: "agTextColumnFilter" },
+    { headerName: "email", field: "email", colId: "email", filter: "agTextColumnFilter" },
+    { headerName: "role_id", field: "role_id", colId: "role_id", filter: "agTextColumnFilter", hide: true },
+    { headerName: "Роль", field: "role_name", colId: "role_name", filter: "agTextColumnFilter" },
+    { headerName: "team_id", field: "team_id", colId: "team_id", filter: "agTextColumnFilter", hide: true },
+    { headerName: "Команда", field: "team_name", colId: "team_name", filter: "agTextColumnFilter" }
 ];
 
-const attr = ['id', 'name', 'email'];
-const toggleActiveList = ['update', 'hardRemove'];
+const rowHandler = (data, event) => {
+    if (data) {
+        $('#id').val(data.id);
+        $('#name').val(data.name);
+        $('#email').val(data.email);
+        $('#role').val(data.role_id);
+        $('#team_id').val(data.team_id);
+    } else {
+        $('#id').val('');
+        $('#name').val('');
+        $('#email').val('');
+        $('#team_id').val('');
+    }
+}
 
-var dataTab = new dataTableHandler(
-    'users',
-    columns,
-    `api/admin/users?teamId=${userTeamId}`,
-    'update',
-    toggleActiveList
-);
-dataTab.setTableDelay();
+function makeDatasource() {
+    return {
+        getRows: async (params) => {
+            try {
+                const body = {
+                    teamId: $("#team_id").val(),
+                    startRow: params.startRow,
+                    endRow: params.endRow,
+                    sortModel: params.sortModel,
+                    filterModel: params.filterModel,
+                };
 
-const customFunc = () => {
-    let id = $("#id").val();
-    let data = apiData("admin/users/"+id);
+                const resp = await fetch("/api/admin/users", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.csrf_token,
+                    },
+                    body: JSON.stringify(body),
+                });
 
-    $("#role > option").each(function() {
-        $(this).prop("selected", false);
-        if (this.value == data.role_id) {
-            $(this).prop("selected", true);
-        };
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                params.successCallback(data.rows, data.lastRow);
+                params.api.setGridOption("loading", false);
+            } catch (e) {
+                console.error(e);
+                params.failCallback();
+                params.api.setGridOption("loading", false);
+            }
+        },
+    };
+}
+
+// кнопки — на странице, чтобы URL/filename были конкретными
+function wireButtons(params) {
+    document.querySelector("#btnResetFilters").addEventListener("click", () => {
+        params.api.setFilterModel(null);
+        params.api.onFilterChanged();
+        params.api.paginationGoToFirstPage();
     });
 
-    $("#team_id > option").each(function() {
-        $(this).prop("selected", false);
-        if (this.value == data.team_id) {
-            $(this).prop("selected", true);
-        };
+    document.querySelector("#btnResetColumns").addEventListener("click", () => {
+        params.api.resetColumnState();
     });
+
+    document.querySelector("#btnExportCsv").addEventListener("click", async () => {
+        await window.AGGridUtils.exportCsvAll(params, {
+            url: "/api/admin/users/csv",
+            filename: "users.csv",
+            teamId: $("#team_id").val(),
+            csrfToken: window.csrf_token,
+        });
+    });
+}
+
+const baseOptions = window.AGGridUtils.createBaseGridOptions({
+    headerComponent: HideableHeader,   // ваш компонент на этой странице
+    paginationPageSize: 20,
+    cacheBlockSize: 20,
+    maxBlocksInCache: 5,
+    onGridReady: (params) => {
+        params.api.setGridOption("loading", true);
+        params.api.setGridOption("datasource", makeDatasource());
+        wireButtons(params);
+    },
+});
+
+const gridOptions = {
+    ...baseOptions,
+    columnDefs,
+    onRowClicked: (event) => {
+        const node = event.node;
+        if (node.isSelected()) {
+            node.setSelected(false);
+            rowHandler(null);
+        } else {
+            event.api.deselectAll();
+            node.setSelected(true);
+            rowHandler(event.data, event);
+        }
+    },
 };
 
-dataTab.setRowHandler(attr, customFunc);
+const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
-var myTable = dataTab.getTable();
+$("#team_id").on("change", () => {
+    gridApi.setGridOption("datasource", makeDatasource());
+    gridApi.paginationGoToFirstPage();
+});
 
-/* DataTable end */
-
-/* Ajax to back for CRUD (start) */
+/* Ajax to back for CRUD */
+const inputAttributes = ['id', 'name', 'email', 'role', 'team_id'];
 const requiredAttributes = ['name', 'email', 'role', 'team_id'];
 
 var postRequests = new postRequests(
-    'Users', // entity name
-    'Пользователь', // russian entity name
-    ['id', 'name', 'email', 'role', 'team_id'] // list of inputs (create form to http request)
+    'Users',
+    'Пользователь',
+    inputAttributes
 );
 
 $('#update, #hardRemove').on('click', function() {
@@ -105,20 +136,10 @@ $('#update, #hardRemove').on('click', function() {
         `api/admin/users/${$("#id").val()}`, 
         this.id
     );
-    dataTab.resetButtons(attr);
-    myTable.draw();
+    inputAttributes.filter(item => item !== 'team_id').forEach(e => {
+        $(`#${e}`).val('');
+    });
+    rowHandler(null);
+    gridApi.setGridOption("datasource", makeDatasource());
+    gridApi.paginationGoToFirstPage();
 });
-
-// $('#team_id').on('change', function() {
-//     team_id = $(this).val();
-//     myTable.ajax.url(`/api/admin/users?teamId=${team_id}`);
-//     toggleActiveList.forEach((e) => {dataTab.setHidden(e)});
-//     myTable.ajax.reload();
-//     //myTable.draw();
-// });
-
-$(document).ready(
-    function() {
-        setPageData();
-    }
-);

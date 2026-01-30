@@ -1,76 +1,41 @@
 from ....models.dict import error_reason_sdim
 from ....logger.log import LogEvent
 from ....app.extensions import db
+from ..aggrid import AGGrid
 from flask import request
 from sqlalchemy import or_, String
 from .wtforms import TeamDictForm
 
 
+ALLOWED_COLS = {
+    "id": error_reason_sdim.id,
+    "name": error_reason_sdim.name,
+    "description": error_reason_sdim.description,
+    "deleted_flag": error_reason_sdim.deleted_flag
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
+
+
 class AdminErrorReason():
     def __init__(self):
-        pass
+        self.grid = AGGrid(
+            obj=error_reason_sdim,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS
+        )
         
-    @staticmethod
-    def get_datatable():
-        try:
-            team_id = request.args.get("teamId")
-            attributes = {
-                0: error_reason_sdim.id,
-                1: error_reason_sdim.name,
-                2: error_reason_sdim.description,
-                3: error_reason_sdim.deleted_flag
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = error_reason_sdim.id
-            
-            query = db.session.query(
-                error_reason_sdim.id,
-                error_reason_sdim.name,
-                error_reason_sdim.description,
-                error_reason_sdim.deleted_flag
-            )
-            if search:
-                query = query.filter(
-                    error_reason_sdim.team_id == team_id,
-                    or_(
-                        error_reason_sdim.id.cast(String).ilike(search),
-                        error_reason_sdim.name.ilike(search),
-                        error_reason_sdim.description(search)
-                    )
-                )
-            else:
-                query = query.filter_by(team_id=team_id)
-            
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                name=row.name,
-                description=row.description,
-                deleted_flag=row.deleted_flag
-            ) for row in dataset]
-            
-            total_records = int(error_reason_sdim.query.filter_by(team_id=team_id).count())
-            total_record_filtered = total_records if search is None else int(query.count())
-            
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-        
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
+    def get_grid(self):
+        return self.grid.get_grid()
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="error_reason_sdim.csv"
+        )
 
     @staticmethod
     def add():

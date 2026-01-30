@@ -22,7 +22,7 @@ const INCLUDE_TYPES = new Set([
     "text",
     "textarea",
     "number"
-])
+]);
 
 const saveSpec = (onlySpec) => {
     if (!onlySpec && !checkFill(2, true)) {
@@ -43,6 +43,27 @@ const saveSpec = (onlySpec) => {
     formData['tag_id'] = formData['tag_id'].filter(item => item);
     formData['alerting'] = $('#alerting').val();
     formData['limit'] = $('#limit').prop('checked');
+
+    // Кастомные атрибуты карточки контроля
+    let params = {};
+    $('#input-attributes select[name="param-keys"]').each(function(index) {
+        const value = $('#input-attributes input[name="param-values"]').eq(index).val();
+        const key = $(this).val();
+        if (key === '' || value === '') {
+            Swal.fire({
+                icon: "warning",
+                title: "Не заполнены выбран атрибут карточки контроля",
+                position: 'top-end',
+                toast: true,
+                showConfirmButton: false,
+                timer: 3000
+            });
+            return false;
+        };
+        params[key] = value;
+    });
+
+    formData['team_attributes'] = JSON.stringify(params);
 
     // Запись изменений по сущностям (fixed_changes - из handleChanges.js)
     Object.assign(formData, fixed_changes);

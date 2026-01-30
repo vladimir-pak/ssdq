@@ -1,118 +1,27 @@
-const formatDate = (date) => {
-    var d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
-    if (month.length < 2)
-         month = '0' + month;
-    if (day.length < 2)
-         day = '0' + day;
-    return [day, month, year].join('.');
-};
+const gridDiv = document.querySelector("#monitoringGrid");
 
-function exportAction (e, dt, button, config, n) {
-    var self = this;
-    var oldStart = dt.settings()[0]._iDisplayStart;
-    dt.one('preXhr', function (e, s, data) {
-        // Just this once, load all data from the server...
-        data.start = 0;
-        data.length = 2147483647;
-        dt.one('preDraw', function (e, settings) {
-        // Call the original action function
-        if (button[0].className.indexOf('buttons-excel') >= 0) {
-            $.fn.dataTable.ext.buttons.excelHtml5.available(dt, config) ?
-                 $.fn.dataTable.ext.buttons.excelHtml5.action.call(self, e, dt, button, config, n) :
-                 $.fn.dataTable.ext.buttons.excelFlash.action.call(self, e, dt, button, config, n);
-        } else if (button[0].className.indexOf('buttons-pdf') >= 0) {
-            $.fn.dataTable.ext.buttons.pdfHtml5.available(dt, config) ?
-                $.fn.dataTable.ext.buttons.pdfHtml5.action.call(self, e, dt, button, config, n) :
-                $.fn.dataTable.ext.buttons.pdfFlash.action.call(self, e, dt, button, config, n);
-        };
-        dt.one('preXhr', function (e, s, data) {
-             // DataTables thinks the first item displayed is index 0, but we're not drawing that.
-             // Set the property to what it was before exporting.
-             settings._iDisplayStart = oldStart;
-             data.start = oldStart;
-        });
-        // Reload the grid with the original page. Otherwise, API functions like table.cell(this) don't work properly.
-        setTimeout(dt.ajax.reload, 0);
-        // Prevent rendering of the full data to the DOM
-        return false;
-        });
-    });
-    // Requery the server with the new one-time export settings
-    dt.ajax.reload();
-};
-
-new DataTable('#monitoringTable', {
-    language: {
-        url: '/static/assets/ru.json'
-    },
-    processing: true,
-    serverSide: true,
-    serverMethod: 'post',
-    dom: "B<'row'<'col-sm-3 p-2'l><'col-sm-6'><'col-sm-3 p-2'f>>tip",
-    buttons:
-        [
-            {
-                extend: 'excel',
-                text: 'Выгрузить в Excel',
-                className: 'btn btn-block btn-outline-primary btn-width',
-                titleAttr: 'Excel',
-                title: 'SSDQ_'+formatDate(new Date()),
-                action: exportAction
-            }
-        ],
-    ajax: {
-        url: window.location.protocol + '//' + window.location.host + `/api/monitoring?filter=${filter}`,
-        headers: {"X-CSRFToken": csrf_token},
-    },
-    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-    searching: true,
-    order: [0,'desc'],
-    aaSorting: ['asc', 'desc'],
-    autoWidth: false,
-    responsive: false,
-    columns: [
-        { data: 'id' },
-        { data: 'name',
-            render: function (data, type, row) {
-                return `<a href="/controls?id=${row.id}">${data}</a>`;
-            }
-        },
-        { data: 'description' },
-        { data: 'object_name' },
-        { data: 'owner' },
-        { data: 'report_date',
-            render: function (data, type, row) {
-                let dd = '';
-                if (formatDate(data) == '01.01.1970') {
-                    dd = '-';
-                }
-                else {
-                    dd = formatDate(data);
-                }
-                return dd;
-            }
-        },
-        { data: 'mistake_count',
-            render: function (data, type, row) {
-                if (data != null) {
-                    return '<a href="/report/'+ row.id +'">'+data+'</a>';
-                }
-                else {
-                    return '-';
-                };
-            }
-        },
-        { data: 'team_name' },
-        { data: 'status_name' }
-    ],
-    oLanguage: {
-        sProcessing: `<div class="spinner-border text-success" style="width: 6rem; height: 6rem;"></div>`,
-        sEmptyTable: "Нет данных"
-    }
-});
+const columnDefs = [
+    { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
+    { headerName: "Наименование", field: "name", colId: "name", filter: "agTextColumnFilter", minWidth: 155 },
+    { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" },
+    { headerName: "Условие отбора", field: "conditions", colId: "conditions", filter: "agTextColumnFilter", minWidth: 160 },
+    { headerName: "Сегмент", field: "segment", colId: "segment", filter: "agTextColumnFilter" },
+    { headerName: "Источник", field: "source", colId: "source", filter: "agTextColumnFilter" },
+    { headerName: "Статус", field: "status_name", colId: "status_name", filter: "agTextColumnFilter" },
+    { headerName: "wiki", field: "wiki", colId: "wiki", filter: "agTextColumnFilter" },
+    { headerName: "Команда", field: "team_name", colId: "team_name", filter: "agTextColumnFilter" },
+    { headerName: "Тип контроля", field: "control_type", colId: "control_type", filter: "agTextColumnFilter", minWidth: 155 },
+    { headerName: "Предметная область", field: "subject_area", colId: "subject_area", filter: "agTextColumnFilter", minWidth: 195 },
+    { headerName: "Уровень критичности", field: "critical_level", colId: "critical_level", filter: "agTextColumnFilter" , minWidth: 200 },
+    { headerName: "Нижняя граница", field: "threshold_min", colId: "threshold_min", filter: "agTextColumnFilter", minWidth: 165 },
+    { headerName: "Верхняя граница", field: "threshold_max", colId: "threshold_max", filter: "agTextColumnFilter", minWidth: 165 },
+    { headerName: "Вид почтовой рассылки", field: "alerting_type", colId: "alerting_type", filter: "agTextColumnFilter", minWidth: 215 },
+    { headerName: "Вид создаваемого инцидента", field: "jira_mode", colId: "jira_mode", filter: "agTextColumnFilter", minWidth: 255 },
+    { headerName: "Объект", field: "object_name", colId: "object_name", filter: "agTextColumnFilter" },
+    { headerName: "Ответственный", field: "owner", colId: "owner", filter: "agTextColumnFilter", minWidth: 155 },
+    { headerName: "Последний запуск", field: "report_date", colId: "report_date", filter: "agDateColumnFilter", minWidth: 180 },
+    { headerName: "Результат", field: "mistake_count", colId: "mistake_count", filter: "agTextColumnFilter" }
+];
 
 const filterNameMap = {
     ALL: "Все контроли",
@@ -125,5 +34,169 @@ const filterNameMap = {
     EXPIRING: "Подходит срок актуализации"
 };
 
-$('#cardHeader').html(filterNameMap[filter]);
+const path = window.location.pathname;
+const pathParts = path.split('/').filter(part => part.length > 0);
+const endpoint = pathParts[pathParts.length - 1];
 
+const getEndpoint = () => {
+    const path = window.location.pathname;
+    const pathParts = path.split('/').filter(part => part.length > 0);
+    return pathParts[pathParts.length - 1].toUpperCase();
+}
+
+function makeDatasource() {
+    return {
+        getRows: async (params) => {
+            try {
+                const body = {
+                    flt: endpoint.toUpperCase(),
+                    startRow: params.startRow,
+                    endRow: params.endRow,
+                    sortModel: params.sortModel,
+                    filterModel: params.filterModel,
+                };
+
+                const resp = await fetch("/api/monitoring", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.csrf_token,
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                params.successCallback(data.rows, data.lastRow);
+                params.api.setGridOption("loading", false);
+            } catch (e) {
+                console.error(e);
+                params.failCallback();
+                params.api.setGridOption("loading", false);
+            }
+        },
+    };
+}
+
+// кнопки — на странице, чтобы URL/filename были конкретными
+function wireButtons(params) {
+    document.querySelector("#btnResetFilters").addEventListener("click", () => {
+        params.api.setFilterModel(null);
+        params.api.onFilterChanged();
+        params.api.paginationGoToFirstPage();
+    });
+
+    document.querySelector("#btnResetColumns").addEventListener("click", () => {
+        params.api.resetColumnState();
+    });
+
+    document.querySelector("#btnExportCsv").addEventListener("click", async () => {
+        await window.AGGridUtils.exportCsvAll(params, {
+            url: "/api/monitoring/csv",
+            filename: "monitoring.csv",
+            extraBody: {flt: getEndpoint()},
+            csrfToken: window.csrf_token,
+        });
+    });
+}
+
+const baseOptions = window.AGGridUtils.createBaseGridOptions({
+    headerComponent: HideableHeader,   // ваш компонент на этой странице
+    paginationPageSize: 20,
+    cacheBlockSize: 20,
+    maxBlocksInCache: 5,
+    onGridReady: (params) => {
+        params.api.setGridOption("loading", true);
+        params.api.setGridOption("datasource", makeDatasource());
+        wireButtons(params);
+    },
+});
+
+const gridOptions = {
+    ...baseOptions,
+    columnDefs
+};
+
+const gridApi = agGrid.createGrid(gridDiv, gridOptions);
+
+const modalToggle = () => {
+    $('#modal-loading').modal('toggle');
+};
+
+
+$('#allDagToggle').on('click', function () {
+    const $el = $(this);
+    const active = $el.toggleClass('active').hasClass('active');
+
+    $el
+        .toggleClass('fa-toggle-on', active)
+        .toggleClass('fa-toggle-off', !active);
+
+    // Включить
+    if (active) {
+        toggleSelectedDags('unpauseDag');
+    } else {
+        // Выключить
+        toggleSelectedDags('pauseDag');
+    }
+});
+
+async function toggleSelectedDags(action) {
+    modalToggle();
+    const filterModel = gridApi.getFilterModel();
+    const sortModel = AGGridUtils.getSortModelFromColumnState(gridApi);
+
+    const resp = await fetch("/api/monitoring/get-ids", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": window.csrf_token
+        },
+        body: JSON.stringify({
+            field: "id",
+            filterModel,
+            sortModel
+        }),
+    });
+
+    if (!resp.ok) {
+        let msg = `HTTP ${resp.status}`;
+        try {
+            const err = await resp.json();
+            msg += err?.error ? `: ${err.error}` : "";
+        } catch {
+            const text = await resp.text().catch(() => "");
+            if (text) msg += `: ${text}`;
+        }
+        throw new Error(msg);
+    }
+
+    const data = await resp.json();
+    const ids = data.values || [];
+
+    for (const id of ids) {
+        let response = apiCall(action, id); // from .api/apiAirflow.js
+        if (!response) {
+            Swal.fire({
+                icon: 'error',
+                title: `По контролю ${id} запрос не выполнен`,
+                position: 'top-end',
+                showConfirmButton: false,
+                toast: true,
+                timer: 5000
+            });
+            const $toggle = $('#allDagToggle');
+            const enabled = false;
+
+            $toggle
+                .toggleClass('fa-toggle-on', enabled)
+                .toggleClass('fa-toggle-off', !enabled);
+                
+            setTimeout(modalToggle, 1000);
+            break
+        }
+    };
+
+    setTimeout(modalToggle, 1000);
+};

@@ -2,91 +2,36 @@ from ....models.dict import dq_source_sdim
 from ....logger.log import LogEvent
 from ....app.extensions import db
 from ....integration.airflow import Dag
-from flask import request
-from sqlalchemy import or_, String
+from ..aggrid import AGGrid
 from .wtforms import SysDictForm
+
+
+ALLOWED_COLS = {
+    "id": dq_source_sdim.id,
+    "name": dq_source_sdim.name,
+    "description": dq_source_sdim.description,
+    "host": dq_source_sdim.host,
+    "port": dq_source_sdim.port,
+    "db_name": dq_source_sdim.db_name,
+    "dbtype": dq_source_sdim.dbtype,
+    "sslmode": dq_source_sdim.sslmode,
+    "deleted_flag": dq_source_sdim.deleted_flag
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
 
 
 class AdminSources():
     def __init__(self):
-        pass
-
-    @staticmethod
-    def get_datatable():
-        try:
-            attributes = {
-                0: dq_source_sdim.id,
-                1: dq_source_sdim.name,
-                2: dq_source_sdim.description,
-                3: dq_source_sdim.host,
-                4: dq_source_sdim.port,
-                5: dq_source_sdim.db_name,
-                6: dq_source_sdim.dbtype,
-                7: dq_source_sdim.sslmode
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = dq_source_sdim.id
-
-            query = db.session.query(
-                dq_source_sdim.id,
-                dq_source_sdim.name,
-                dq_source_sdim.description,
-                dq_source_sdim.host,
-                dq_source_sdim.port,
-                dq_source_sdim.db_name,
-                dq_source_sdim.dbtype,
-                dq_source_sdim.sslmode,
-                dq_source_sdim.deleted_flag
-            )
-            if search:
-                query = query.filter(
-                    or_(
-                        dq_source_sdim.id.cast(String).ilike(search),
-                        dq_source_sdim.name.ilike(search),
-                        dq_source_sdim.host.ilike(search),
-                        dq_source_sdim.port.ilike(search),
-                        dq_source_sdim.db_name.ilike(search),
-                        dq_source_sdim.description.ilike(search),
-                        dq_source_sdim.dbtype.ilike(search),
-                        dq_source_sdim.sslmode.ilike(search)
-                    )
-                )
-
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                name=row.name,
-                description=row.description,
-                host=row.host,
-                port=row.port,
-                db_name=row.db_name,
-                dbtype=row.dbtype,
-                sslmode=row.sslmode,
-                deleted_flag=row.deleted_flag
-            ) for row in dataset]
-
-            total_records = int(dq_source_sdim.query.count())
-            total_record_filtered = total_records if search is None else int(query.count())
-
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
+        self.grid = AGGrid(
+            obj=dq_source_sdim,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS
+        )
 
     @staticmethod
     def add():
@@ -169,3 +114,11 @@ class AdminSources():
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
+        
+    def get_grid(self):
+        return self.grid.get_grid()
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="dq_source_sdim.csv"
+        )

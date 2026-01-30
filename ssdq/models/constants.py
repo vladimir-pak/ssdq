@@ -40,13 +40,13 @@ class critical_level(Enum):
 
 class AlertingType(Enum):
     ALWAYS = 1 # Всегда
-    EXCEEDED = 2 # При превышении критичного порога
+    EXCEEDED = 2 # При превышении верхней границы
     NEVER = 3 # Никогда
 
 
 class AlertingTypeRu(Enum):
     ALWAYS = "Всегда"
-    EXCEEDED = "При превышении критичного порога"
+    EXCEEDED = "При превышении верхней границы"
     NEVER = "Никогда"
 
 

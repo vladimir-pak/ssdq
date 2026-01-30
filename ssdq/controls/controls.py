@@ -3,7 +3,8 @@ from ..models.base import dq_control_sdim, dq_control_object_stat, dq_control_ow
     dq_dag_sdim, dq_alerting_stat, dq_control_hist, \
     dq_validation_stat, dq_control_tags_stat
 from ..models.dict import dq_control_type_sdim, dq_source_sdim, subject_area_sdim, \
-    dq_object_sdim, dq_segment_sdim, dq_pattern_sdim, tags
+    dq_object_sdim, dq_segment_sdim, dq_pattern_sdim, tags, dq_team_attributes_dim, \
+    dq_characteristic_sdim
 from ..models.constants import JiraMode, JiraModeRu, critical_level, \
     ControlStatus, ControlStatusRu, AlertingType, AlertingTypeRu, DagType, \
     DagTypeRu
@@ -16,11 +17,31 @@ from flask import request, render_template, redirect
 from flask_login import current_user
 from sqlalchemy import and_, case
 from datetime import datetime
+import json
 
 
 class Controls:
     def __init__(self):
         pass
+    
+    @staticmethod
+    def get_team_attributes(team_id:str):
+        try:
+            attributes = db.session.query(
+                dq_team_attributes_dim.name,
+                dq_team_attributes_dim.description,
+                dq_team_attributes_dim.is_required
+            ).filter_by(
+                team_id=team_id
+            ).all()
+            return [dict(
+                key=at.name,
+                description=at.description,
+                is_required=at.is_required
+            ) for at in attributes]
+        except Exception as ex:
+            LogEvent.log_error(ex)
+            raise ex
 
     @staticmethod
     def render():
@@ -62,6 +83,9 @@ class Controls:
                     ),
                     isouter=True
                 ).join(
+                    dq_characteristic_sdim, dq_characteristic_sdim.id == dq_control_sdim.characteristic_id,
+                    isouter=True
+                ).join(
                     Teams, Teams.id == dq_control_sdim.team_id
                 ).add_columns(
                     dq_control_sdim.id,
@@ -78,7 +102,9 @@ class Controls:
                     dq_control_type_sdim.name.label("control_type_name"),
                     dq_source_sdim.description.label("source_name"),
                     subject_area_sdim.name.label("subject_area_name"),
-                    Teams.json["display_name"].label("team_name")
+                    Teams.json["display_name"].label("team_name"),
+                    dq_characteristic_sdim.name.label("characteristic_name"),
+                    dq_control_sdim.team_attributes
                 ).filter(
                     dq_control_sdim.id == id,
                     dq_control_sdim.deleted_flag == 'N'
@@ -179,6 +205,11 @@ class Controls:
             alerting_type = [dict(id=cur.value, name=cur.name, display_name=AlertingTypeRu[cur.name].value) for cur in AlertingType]
 
             jira_mode = [dict(id=cur.value, name=cur.name, display_name=JiraModeRu[cur.name].value) for cur in JiraMode]
+            
+            characteristic = db.session.query(
+                    dq_characteristic_sdim.id,
+                    dq_characteristic_sdim.name
+                ).all()
 
             if current_user.admin:
                 team_list = db.session.query(
@@ -204,7 +235,7 @@ class Controls:
                                        segments=segments, statuses=statuses, sources=sources, 
                                        minutes=minutes, hours=hours, days_in_month=days_in_month, teams=team_list,
                                        control_types=control_types, subject_area=subject_area, alerting_type=alerting_type,
-                                       jira_mode=jira_mode, critical_level=critical_level)
+                                       jira_mode=jira_mode, critical_level=critical_level, characteristic=characteristic)
             elif action == "update":
                 if control_id is None:
                     return redirect("/controls")
@@ -277,6 +308,7 @@ class Controls:
                     segments=segments, statuses=statuses, sources=sources, hours=hours, minutes=minutes,
                     days_in_month=days_in_month, teams=team_list, control_types=control_types, subject_area=subject_area,
                     alerting_type=alerting_type, jira_mode=jira_mode,critical_level=critical_level, dag_type=dag_type,
+                    characteristic=characteristic,
                     # controls info
                     control=control, owners=owners, objects=objects, created_user=created_user, alerting_users=alerting_users,
                     dag=dag, schedule=schedule, sql_pattern=sql_pattern, tags=tags_list
@@ -292,9 +324,13 @@ class Controls:
         try:
             if not data:
                 data = request.get_json()
+            team_attributes = json.loads(data['team_attributes'])
+            del data['team_attributes']
+            
             control = dq_control_sdim(
                 name=data["control_name"],
                 created_by=current_user.id,
+                team_attributes=team_attributes,
                 **data
             )
             db.session.add(control)
@@ -314,12 +350,17 @@ class Controls:
                 dag_class = ControlDagMap.get_dag_class(dag_type, control_id)
                 dag_class.create(**data)
                 dag_class.deploy_dag(control_id)
+                
+            db.session.commit()
 
             LogEvent.log_event(eventName="createEntity", entityName="DQControl", entityId=str(control_id))
             return {"control_id": control_id}, 201
 
         except Exception as ex:
             LogEvent.log_error(ex)
+            db.session.rollback()
+            dq_control_sdim.query.filter_by(id=control_id).delete()
+            db.session.commit()
             return {"message": str(ex)}, 500
 
     def update(self, id:str|int):
@@ -327,6 +368,8 @@ class Controls:
             now = datetime.now()
 
             data = request.get_json()
+            team_attributes = json.loads(data['team_attributes'])
+            del data['team_attributes']
 
             control_sdim:bool = data['dq_control_sdim']
             control_owner_stat:bool = data['dq_control_owner_stat']
@@ -360,10 +403,12 @@ class Controls:
                     alerting_type_id=control.alerting_type_id,
                     jira_mode_id=control.jira_mode_id,
                     effective_from=control.updated_at,
-                    effective_to=now
+                    effective_to=now,
+                    team_attributes=control.team_attributes,
+                    characteristic_id=control.characteristic_id
                 )
                 db.session.add(control_hist)
-                db.session.commit()
+                # db.session.commit()
 
                 control = dq_control_sdim.query.filter_by(
                     id=id
@@ -376,9 +421,10 @@ class Controls:
                 control.update(dict(
                     name=data["control_name"],
                     updated_at=now,
+                    team_attributes=team_attributes,
                     **filtered_data
                 ))
-                db.session.commit()
+                # db.session.commit()
 
                 """Check previous status. If it was disabled or actualization and exploitation now then delete from validation list"""
                 disabled_status = [ControlStatus.ACTUALIZATION, ControlStatus.DISABLED]
@@ -389,24 +435,24 @@ class Controls:
 
             if control_owner_stat:
                 delete = dq_control_owner_stat.query.filter_by(control_id=id).delete()
-                db.session.commit()
+                # db.session.commit()
                 self.__insert_owners(id, data["owner_id"])
 
             if control_object_stat:
                 delete = dq_control_object_stat.query.filter_by(control_id=id).delete()
-                db.session.commit()
+                # db.session.commit()
                 self.__insert_objects(id, data["object_id"])
 
             if alerting_sdim:
                 delete = dq_alerting_stat.query.filter_by(control_id=id).delete()
-                db.session.commit()
+                # db.session.commit()
                 self.__insert_alerting(id, data["alerting"])
 
                 need_to_deploy = True
 
             if control_tags_stat:
                 delete = dq_control_tags_stat.query.filter_by(control_id=id).delete()
-                db.session.commit()
+                # db.session.commit()
                 self.__insert_tags(id, data["tag_id"])
 
             if not data['onlySpec'] and dag_sdim:
@@ -415,10 +461,12 @@ class Controls:
                 dag_class.update(**data)
 
                 need_to_deploy = True
+            
+            db.session.commit()
 
             LogEvent.log_event(eventName="updateEntity", entityName="DQControl", entityId=str(id))
-
-            if need_to_deploy:
+            
+            if need_to_deploy and not data['onlySpec']:
                 ControlDag.deploy_dag(id)
             return '', 204
 
@@ -478,21 +526,21 @@ class Controls:
     def __insert_owners(self, control_id:int|str, owner_list:list) -> None:
         owners = [dq_control_owner_stat(control_id=control_id, owner_id=cur) for cur in owner_list]
         db.session.add_all(owners)
-        db.session.commit()
+        # db.session.commit()
 
     def __insert_objects(self, control_id:int|str, object_list:list) -> None:
         objects = [dq_control_object_stat(control_id=control_id, object_id=cur) for cur in object_list]
         db.session.add_all(objects)
-        db.session.commit()
+        # db.session.commit()
 
     def __insert_alerting(self, control_id:int|str, alerting_list:list) -> None:
         if alerting_list:
             alerting = [dq_alerting_stat(control_id=control_id, user_id=cur) for cur in alerting_list]
             db.session.add_all(alerting)
-            db.session.commit()
+            # db.session.commit()
 
     def __insert_tags(self, control_id:int|str, tags_list:list) -> None:
         if tags_list:
             tags = [dq_control_tags_stat(control_id=control_id, tag_id=cur) for cur in tags_list]
             db.session.add_all(tags)
-            db.session.commit()
+            # db.session.commit()

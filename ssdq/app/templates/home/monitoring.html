@@ -42,9 +42,6 @@
         <div class="col-12">
           <!-- /.card -->
           <div class="card">
-            <div class="card-header">
-              <h3 class="card-title" id="cardHeader"></h3>
-            </div>
             <!-- /.card-header -->
             <div class="card-body table-responsive">
               <div class="card-tools" style="position: absolute; right: 2vw;">
@@ -58,26 +55,16 @@
                 </ul>
               </div>
               <!-- <div class="scroll-table"> -->
-              <div id="table">
-                <table
-                  class="table table-hover text-nowrap dataframe dataTable no-footer"
-                  id="monitoringTable" role="grid" aria-describedby="monitoringTable_info"
-                  style="overflow-x: auto; display: block; font-size:12px;">
-                  <thead>
-                    <tr style="text-align: center;" role="row">
-                      <th class="sorting">№ Контроля</th>
-                      <th class="sorting">Название контроля</th>
-                      <th class="sorting">Описание контроля</th>
-                      <th class="sorting">Объект</th>
-                      <th class="sorting">Ответственный</th>
-                      <th class="sorting">Последний запуск</th>
-                      <th class="sorting">Результат</th>
-                      <th class="sorting">Команда</th>
-                      <th class="sorting">Статус</th>
-                    </tr>
-                  </thead>
-                </table>
+              <div style="display:flex; gap:12px; align-items:center; margin-bottom: 10px;">
+                <button id="btnResetFilters" class="btn btn-outline-primary">Сброс фильтров</button>
+                <button id="btnResetColumns" class="btn btn-outline-primary">Сброс колонок</button>
+                <button id="btnExportCsv" class="btn btn-outline-primary">Экспорт CSV (всё по фильтрам)</button>
+                <a data-title="Вкл/выкл выбранные контроли в Airflow" class="nav-link tip">
+                  <i id="allDagToggle" class="fas fa-toggle-off fa-toggle"></i>
+                </a>
               </div>
+
+              <div id="monitoringGrid" class="ag-theme-quartz" style="height: 700px; width: 100%;"></div>
               <!-- </div> -->
             </div>
             <!-- /.card-body -->
@@ -88,6 +75,19 @@
       </div>
       <!-- /.row -->
     </div>
+    <div class="modal fade" id="modal-loading">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-body">
+                  <div class="d-flex justify-content-center">
+                      <div class="spinner-border text-success m-5" style="width: 7rem; height: 7rem;"></div>
+                  </div>
+              </div>
+          </div>
+          <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+  </div>
     <!-- /.container-fluid -->
   </section>
   <!-- /.content -->
@@ -99,24 +99,17 @@
 {% block javascripts %}
 
 <script type="text/javascript">
-  window.filter = "{{ filter }}";
   window.csrf_token = "{{ csrf_token() }}";
 </script>
 <!-- jQuery -->
 <script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-buttons/js/buttons.print.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-buttons/js/buttons.html5.min.js"></script>
-
-<!-- AdminLTE App -->
-<script src="/static/assets/node_modules/jszip/dist/jszip.min.js"></script>
-
+<script src="/static/assets/js/datatable_handler/utils.js"></script>
+<script src="/static/assets/node_modules/ag-grid-community/dist/ag-grid-community.min.js"></script>
+<script src="/static/assets/js/ag_grid/toggle_columns.js"></script>
+<script src="/static/assets/js/ag_grid/utils.js"></script>
+<script src="/static/assets/js/api/apiAirflow.js"></script>
 <script src="/static/assets/js/views/monitoring.js"></script>
+
 {% endblock javascripts %}

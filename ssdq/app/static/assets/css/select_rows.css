@@ -1,3 +1,7 @@
 .selected {
     background: #b2e4ff!important;
 }
+
+.ag-theme-quartz .ag-row.ag-row-selected {
+    background: #b2e4ff !important;
+}

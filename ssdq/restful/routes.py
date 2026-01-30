@@ -5,35 +5,56 @@ from .api.select import Select2API
 from .api.monitoring import Monitoring
 from .api.main import Main
 from .api.report import Report, ReportJira
+from ..controls.controls import Controls
 from ..integration.airflow import AirflowAPI
 from ..integration.jira import JiraApi
 from .api.admin import AdminUsers, AdminTeams, TeamConnection, \
     AdminObjects, AdminControlType, AdminErrorReason, AdminSegments, \
-    AdminSources, AdminSubjectArea, PatternSql, Tags
+    AdminSources, AdminSubjectArea, PatternSql, Tags, AdminCharacteristic, \
+    AdminTeamAttributes
 from ..logger.log import log_route
 from ..security.access import roles_accepted, control_accepted
 
 api_routes = Blueprint('api_routes', __name__, template_folder='templates')
 
-@api_routes.route('/api/select2', methods=['GET'])
+@api_routes.get('/api/select2')
 @login_required
 @log_route()
 def get_select():
     return Select2API.get_data(request.args.get("entity"))
 
-@api_routes.route('/api/monitoring', methods=['POST'])
+@api_routes.post('/api/monitoring')
 @login_required
 @log_route()
 def get_monitoring_data():
-    return Monitoring().get_data()
+    return Monitoring().get_grid()
 
-@api_routes.route('/api/main', methods=['GET'])
+@api_routes.post('/api/monitoring/csv')
+@login_required
+@log_route()
+def get_monitoring_csv():
+    return Monitoring().export_csv_stream()
+
+@api_routes.post('/api/monitoring/get-ids')
+@login_required
+@log_route()
+def get_monitoring_ids():
+    return Monitoring().get_ids()
+
+@api_routes.get('/api/controls/team-attributes/<string:team_id>')
+@login_required
+@roles_accepted(["User", "TeamOwner"])
+@log_route()
+def control_team_attributes(team_id:str):
+    return Controls().get_team_attributes(team_id)
+
+@api_routes.get('/api/main')
 @login_required
 @log_route()
 def get_main_data():
     return Main.counts()
 
-@api_routes.route('/api/main/charts', methods=['GET'])
+@api_routes.get('/api/main/charts')
 @login_required
 @log_route()
 def get_main_charts():
@@ -42,7 +63,7 @@ def get_main_charts():
     else:
         return Main.get_results()
 
-@api_routes.route('/api/main/card', methods=['GET'])
+@api_routes.get('/api/main/card')
 @login_required
 @log_route()
 def get_main_card():
@@ -91,22 +112,23 @@ def report_edit(id:int, wf_id:int):
     else:
         return {"response": "There is no data"}
 
-@api_routes.route('/api/admin/users', methods=["GET", "POST"])
+@api_routes.post('/api/admin/users')
 @login_required
 @log_route()
 def api_admin_users():
-    if request.method == "GET":
-        return AdminUsers.get_data()
-    else:
-        return AdminUsers.get_datatable()
+    return AdminUsers().get_grid()
+    
+@api_routes.post('/api/admin/users/csv')
+@login_required
+@log_route()
+def api_admin_users_csv():
+    return AdminUsers().export_csv_stream()
 
-@api_routes.route('/api/admin/users/<string:id>', methods=["GET", "PATCH", "DELETE"])
+@api_routes.route('/api/admin/users/<string:id>', methods=["PATCH", "DELETE"])
 @login_required
 @log_route()
 def api_admin_users_id(id:str):
-    if request.method == "GET":
-        return AdminUsers.get_user_data(id)
-    elif request.method == "PATCH":
+    if request.method == "PATCH":
         return AdminUsers.update_user(id)
     else:
         return AdminUsers.delete_user(id)
@@ -116,9 +138,15 @@ def api_admin_users_id(id:str):
 @log_route()
 def api_admin_teams():
     if request.method == "POST":
-        return AdminTeams.get_datatable()
+        return AdminTeams().get_grid()
     else:
         return AdminTeams.add()
+    
+@api_routes.post('/api/admin/teams/csv')
+@login_required
+@log_route()
+def api_admin_teams_csv():
+    return AdminTeams().export_csv_stream()
 
 @api_routes.route('/api/admin/teams/<string:id>', methods=["GET", "POST", "DELETE", "PATCH"])
 @login_required
@@ -131,16 +159,22 @@ def api_admin_teams_id(id:str):
     elif request.method == "GET":
         return AdminTeams.get_data(id)
     elif request.method == "POST":
-        return AdminUsers.get_datatable(team_id=id)
+        return AdminUsers().get_grid()
 
 @api_routes.route('/api/admin/objects', methods=["POST", "PUT"])
 @login_required
 @log_route()
 def api_admin_objects():
     if request.method == "POST":
-        return AdminObjects.get_datatable()
+        return AdminObjects().get_grid()
     else:
         return AdminObjects.add()
+    
+@api_routes.post('/api/admin/objects/csv')
+@login_required
+@log_route()
+def api_admin_objects_csv():
+    return AdminObjects().export_csv_stream()
 
 @api_routes.route('/api/admin/objects/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
@@ -161,9 +195,15 @@ def api_admin_objects_id(id:str):
 @log_route()
 def api_admin_sources():
     if request.method == "POST":
-        return AdminSources.get_datatable()
+        return AdminSources().get_grid()
     else:
         return AdminSources.add()
+    
+@api_routes.post('/api/admin/objects/csv')
+@login_required
+@log_route()
+def api_admin_sources_csv():
+    return AdminSources().export_csv_stream()
 
 @api_routes.route('/api/admin/sources/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
@@ -179,14 +219,45 @@ def api_admin_sources_id(id:str):
     elif request.method == "PUT":
         return AdminSources.delete_restore(id, True)
 
+
+@api_routes.route('/api/admin/characteristic', methods=["POST", "PUT"])
+@login_required
+@log_route()
+def api_characteristic():
+    if request.method == "POST":
+        return AdminCharacteristic().get_grid()
+    else:
+        return AdminCharacteristic.add()
+    
+@api_routes.post('/api/admin/characteristic/csv')
+@login_required
+@log_route()
+def characteristic_csv():
+    return AdminCharacteristic().export_csv_stream()
+
+@api_routes.route('/api/admin/characteristic/<string:id>', methods=["PATCH", "DELETE"])
+@login_required
+@log_route()
+def api_characteristic_id(id:str):
+    if request.method == "PATCH":
+        return AdminCharacteristic.update(id)
+    elif request.method == "DELETE":
+        return AdminCharacteristic.delete(id)
+
 @api_routes.route('/api/admin/control-types', methods=["POST", "PUT"])
 @login_required
 @log_route()
 def api_admin_controltypes():
     if request.method == "POST":
-        return AdminControlType.get_datatable()
+        return AdminControlType().get_grid()
     else:
         return AdminControlType.add()
+    
+@api_routes.post('/api/admin/control-types/csv')
+@login_required
+@log_route()
+def api_admin_controltypes_csv():
+    return AdminControlType().export_csv_stream()
 
 @api_routes.route('/api/admin/control-types/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
@@ -207,9 +278,15 @@ def api_admin_controltypes_id(id:str):
 @log_route()
 def api_admin_errorreason():
     if request.method == "POST":
-        return AdminErrorReason.get_datatable()
+        return AdminErrorReason().get_grid()
     else:
         return AdminErrorReason.add()
+    
+@api_routes.post('/api/admin/error-reason/csv')
+@login_required
+@log_route()
+def api_admin_error_reason_csv():
+    return AdminErrorReason().export_csv_stream()
 
 @api_routes.route('/api/admin/error-reason/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
@@ -230,9 +307,15 @@ def api_admin_errorreason_id(id:str):
 @log_route()
 def api_admin_subjectarea():
     if request.method == "POST":
-        return AdminSubjectArea.get_datatable()
+        return AdminSubjectArea().get_grid()
     else:
         return AdminSubjectArea.add()
+    
+@api_routes.post('/api/admin/subject-area/csv')
+@login_required
+@log_route()
+def api_admin_subject_area_csv():
+    return AdminSubjectArea().export_csv_stream()
 
 @api_routes.route('/api/admin/subject-area/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
@@ -253,9 +336,15 @@ def api_admin_subjectarea_id(id:str):
 @log_route()
 def api_admin_segments():
     if request.method == "POST":
-        return AdminSegments.get_datatable()
+        return AdminSegments().get_grid()
     else:
         return AdminSegments.add()
+    
+@api_routes.post('/api/admin/segments/csv')
+@login_required
+@log_route()
+def segments_csv():
+    return AdminSegments().export_csv_stream()
 
 @api_routes.route('/api/admin/segments/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
@@ -276,11 +365,17 @@ def api_admin_segments_id(id:str):
 @log_route()
 def api_pattern_sql():
     if request.method == "POST":
-        return PatternSql.get_datatable()
+        return PatternSql().get_grid()
     else:
         return PatternSql.add()
+    
+@api_routes.post('/api/admin/pattern-sql/csv')
+@login_required
+@log_route()
+def pattern_sql_csv():
+    return PatternSql().export_csv_stream()
 
-@api_routes.route('/api/admin/pattern-sql/<string:id>', methods=["GET", "PATCH", "PUT", "DELETE"])
+@api_routes.route('/api/admin/pattern-sql/<string:id>', methods=["PATCH", "PUT", "DELETE"])
 @login_required
 @log_route()
 def api_pattern_sql_id(id:str):
@@ -293,17 +388,21 @@ def api_pattern_sql_id(id:str):
             return PatternSql.delete_restore(id)
     elif request.method == "PUT":
         return PatternSql.delete_restore(id, True)
-    elif request.method == "GET":
-        return PatternSql.get_detail_info(id)
 
 @api_routes.route('/api/admin/tags', methods=["POST", "PUT"])
 @login_required
 @log_route()
 def api_tags():
     if request.method == "POST":
-        return Tags.get_datatable()
+        return Tags().get_grid()
     else:
         return Tags.add()
+    
+@api_routes.post('/api/admin/tags/csv')
+@login_required
+@log_route()
+def api_tags_csv():
+    return Tags().export_csv_stream()
 
 @api_routes.route('/api/admin/tags/<string:id>', methods=["PATCH", "DELETE"])
 @login_required
@@ -314,6 +413,30 @@ def api_tags_id(id:str):
     elif request.method == "DELETE":
         return Tags.delete(id)
 
+@api_routes.route('/api/admin/team-attributes', methods=["POST", "PUT"])
+@login_required
+@log_route()
+def api_team_attributes():
+    if request.method == "POST":
+        return AdminTeamAttributes().get_grid()
+    else:
+        return AdminTeamAttributes.add()
+    
+@api_routes.post('/api/admin/team-attributes/csv')
+@login_required
+@log_route()
+def team_attributes_csv():
+    return AdminTeamAttributes().export_csv_stream()
+
+@api_routes.route('/api/admin/team-attributes/<string:id>', methods=["PATCH", "DELETE"])
+@login_required
+@log_route()
+def api_team_attributes_id(id:str):
+    if request.method == "PATCH":
+        return AdminTeamAttributes.update(id)
+    elif request.method == "DELETE":
+        return AdminTeamAttributes.delete(id)
+    
 @api_routes.route('/api/dags/triggerDag', methods=['POST'])
 @login_required
 @roles_accepted(["User", "TeamOwner"])

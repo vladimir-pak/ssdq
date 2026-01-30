@@ -1,6 +1,27 @@
+const gridDiv = document.querySelector("#patternSqlGrid");
+
+const toggleActiveList = ['update', 'remove', 'hardRemove'];
+const toggleDeletedList = ['restore'];
+
+const columnDefs = [
+    { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
+    { headerName: "Наименование", field: "name", colId: "name", filter: "agTextColumnFilter" },
+    { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" },
+    { headerName: "sql", field: "sql", colId: "sql", filter: "agTextColumnFilter", hide: true },
+    { headerName: "params", field: "params", colId: "params", filter: "agTextColumnFilter", hide: true },
+    {
+        headerName: "Удален",
+        field: "deleted_flag",
+        colId: "deleted_flag",
+        filter: "agTextColumnFilter",
+        width: 120,
+    }
+];
+
 // показать/спрятать sql и параметры
 $(document).on('click', '.js-toggle-btn', function() {
     $(this).next('div').slideToggle(300);
+    $(this).next('div').next('div').slideToggle(300);
 });
 
 // добавление параметра
@@ -102,90 +123,155 @@ const checkParams = (params) => {
     return true;
 };
 
-/* DataTable start */
-const columns = [
-    {data: 'id'},
-    {data: 'name'},
-    {data: 'description'},
-    {
-        data: 'deleted_flag',
-        render: function (data) {
-            return data == 'Y' ? 'Да' : 'Нет';
-        }
-    }
-];
+const rowHandler = (data, event) => {
+    if (data) {
+        $("#input-parameters").empty();
+        addParam();
 
-const attr = ['id', 'name', 'description', 'sql'];
-const toggleActiveList = ['update', 'remove', 'hardRemove'];
-const toggleDeletedList = ['restore'];
-var team_id = $('#team_id').val();
-
-var dataTab = new dataTableHandler(
-    'patternSql',
-    columns,
-    `api/admin/pattern-sql?teamId=${team_id}`,
-    'add',
-    toggleActiveList,
-    true,
-    3,
-    toggleDeletedList
-);
-
-const customFunc = () => {
-    const id = $("#id").val();
-    $("#input-parameters").empty();
-    addParam();
-    $("#sql").val("");
-    if (id) {
-        let url = window.location.protocol + '//' + window.location.host + '/api/admin/pattern-sql/' + $("#id").val();
-        $.ajax({
-            type: "GET",
-            url: url,
-            headers: {"X-CSRFToken": csrf_token},
-            dataType: "json",
-            encode: true,
-            async: true
-        }).done(function (data) {
-            $("#sql").val(data.sql);
-            const keys = Object.keys(data.params);
-            const values = Object.values(data.params);
-            const cntParams = keys.length;
-            for (let i=0; i < cntParams - 1; i++) {
-                addParam();
-            };
-            $('#input-parameters input[name="param-keys"]').each(function(index) {
-                $(this).val(keys[index]);
-            });
-            $('#input-parameters input[name="param-values"]').each(function(index) {
-                $(this).val(values[index]);
-            });
-        }).fail(function (data) {
-            Swal.fire({
-                icon: 'error',
-                title: JSON.parse(data.responseText).message,
-                position: 'top-end',
-                showConfirmButton: false,
-                toast: true,
-                timer: 5000
-            });
+        $('#id').val(data.id);
+        $('#name').val(data.name);
+        $('#description').val(data.description);
+        $('#sql').val(data.sql);
+        const keys = Object.keys(data.params);
+        const values = Object.values(data.params);
+        const cntParams = keys.length;
+        for (let i=0; i < cntParams - 1; i++) {
+            addParam();
+        };
+        $('#input-parameters input[name="param-keys"]').each(function(index) {
+            $(this).val(keys[index]);
         });
+        $('#input-parameters input[name="param-values"]').each(function(index) {
+            $(this).val(values[index]);
+        });
+    } else {
+        $('#id').val('');
+        $('#name').val('');
+        $('#description').val('');
+        $('#sql').val('');
+    }
+
+    if (event) {
+        window.AGGridUtils.setHidden('add');
+        deleted = data.deleted_flag == 'Y' ? true : false;
+
+        toggleActiveList.forEach((element) => {
+            deleted ? window.AGGridUtils.setHidden(element) : window.AGGridUtils.removeHidden(element);
+        });
+        toggleDeletedList.forEach((element) => {
+            deleted ? window.AGGridUtils.removeHidden(element) : window.AGGridUtils.setHidden(element);
+        });
+    } else {
+        toggleActiveList.forEach((element) => {
+            window.AGGridUtils.setHidden(element);
+        });
+        toggleDeletedList.forEach((element) => {
+            window.AGGridUtils.setHidden(element);
+        });
+        window.AGGridUtils.removeHidden('add');
+    }
+}
+
+function makeDatasource() {
+    return {
+        getRows: async (params) => {
+            try {
+                const body = {
+                    teamId: $("#team_id").val(),
+                    startRow: params.startRow,
+                    endRow: params.endRow,
+                    sortModel: params.sortModel,
+                    filterModel: params.filterModel,
+                };
+
+                const resp = await fetch("/api/admin/pattern-sql", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.csrf_token,
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                const data = await resp.json();
+
+                params.successCallback(data.rows, data.lastRow);
+                params.api.setGridOption("loading", false);
+            } catch (e) {
+                console.error(e);
+                params.failCallback();
+                params.api.setGridOption("loading", false);
+            }
+        },
     };
+}
+
+// кнопки — на странице, чтобы URL/filename были конкретными
+function wireButtons(params) {
+    document.querySelector("#btnResetFilters").addEventListener("click", () => {
+        params.api.setFilterModel(null);
+        params.api.onFilterChanged();
+        params.api.paginationGoToFirstPage();
+    });
+
+    document.querySelector("#btnResetColumns").addEventListener("click", () => {
+        params.api.resetColumnState();
+    });
+
+    document.querySelector("#btnExportCsv").addEventListener("click", async () => {
+        await window.AGGridUtils.exportCsvAll(params, {
+            url: "/api/admin/pattern-sql/csv",
+            filename: "pattern_sql.csv",
+            teamId: $("#team_id").val(),
+            csrfToken: window.csrf_token,
+        });
+    });
+}
+
+const baseOptions = window.AGGridUtils.createBaseGridOptions({
+    headerComponent: HideableHeader,   // ваш компонент на этой странице
+    paginationPageSize: 20,
+    cacheBlockSize: 20,
+    maxBlocksInCache: 5,
+    onGridReady: (params) => {
+        params.api.setGridOption("loading", true);
+        params.api.setGridOption("datasource", makeDatasource());
+        wireButtons(params);
+    },
+});
+
+const gridOptions = {
+    ...baseOptions,
+    columnDefs,
+    onRowClicked: (event) => {
+        const node = event.node;
+        if (node.isSelected()) {
+            node.setSelected(false);
+            rowHandler(null);
+        } else {
+            event.api.deselectAll();
+            node.setSelected(true);
+            rowHandler(event.data, event);
+        }
+    },
 };
 
-dataTab.setTableDelay();
-dataTab.setRowHandler(attr, undefined, customFunc);
+const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
-var myTable = dataTab.getTable();
+$("#team_id").on("change", () => {
+    gridApi.setGridOption("datasource", makeDatasource());
+    gridApi.paginationGoToFirstPage();
+});
 
-/* DataTable end */
-
-/* Ajax to back for CRUD (start) */
+/* Ajax to back for CRUD */
+const inputAttributes = ['id', 'team_id', 'name', 'description', 'sql'];
 const requiredAttributes = ['name', 'description', 'sql'];
 
 var postRequests = new postRequests(
     'PatternSql',
     'SQL шаблон',
-    ['id', 'team_id', 'name', 'description', 'sql']
+    inputAttributes
 );
 
 $('#add, #update, #remove, #hardRemove, #restore').on('click', function() {
@@ -230,18 +316,10 @@ $('#add, #update, #remove, #hardRemove, #restore').on('click', function() {
         this.id == "add" ? "PUT" : undefined,
         formData
     );
-    dataTab.resetButtons(attr);
-    $("#input-parameters").empty();
-    addParam();
-    myTable.draw();
-});
-
-$('#team_id').on('change', function() {
-    team_id = $(this).val();
-    myTable.ajax.url(`/api/admin/pattern-sql?teamId=${team_id}`);
-    toggleActiveList.forEach((e) => {dataTab.setHidden(e)});
-    toggleDeletedList.forEach((e) => {dataTab.setHidden(e)});
-    dataTab.removeHidden('add');
-    myTable.ajax.reload();
-    //myTable.draw();
+    inputAttributes.filter(item => item !== 'team_id').forEach(e => {
+        $(`#${e}`).val('');
+    });
+    rowHandler(null);
+    gridApi.setGridOption("datasource", makeDatasource());
+    gridApi.paginationGoToFirstPage();
 });

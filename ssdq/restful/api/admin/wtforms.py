@@ -18,7 +18,9 @@ class TeamDictForm(FlaskForm):
     id = StringField('id')
     name = StringField('name', validators=[DataRequired()])
     description = StringField('description', validators=[DataRequired()])
+    tag_type = StringField('tag_type')
     team_id = StringField('team_id')
+    is_required = StringField('is_required')
 
 
 class ObjectsForm(FlaskForm):

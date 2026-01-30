@@ -1,18 +1,20 @@
-const gridDiv = document.querySelector("#subjectAreaGrid");
+const gridDiv = document.querySelector("#teamAttributesGrid");
 
-const toggleActiveList = ['update', 'remove', 'hardRemove'];
-const toggleDeletedList = ['restore'];
+const toggleActiveList = ['update', 'hardRemove'];
 
 const columnDefs = [
     { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
     { headerName: "Наименование", field: "name", colId: "name", filter: "agTextColumnFilter" },
     { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" },
-    {
-        headerName: "Удален",
-        field: "deleted_flag",
-        colId: "deleted_flag",
+    { 
+        headerName: "Обязательность заполнения",
+        field: "is_required",
+        colId: "is_required",
         filter: "agTextColumnFilter",
-        width: 120,
+        valueFormatter: p => p.value ? "Да" : "Нет",
+        filterParams: {
+            filterOptions: ["equals", "notEqual", "blank", "notBlank"]
+        }
     }
 ];
 
@@ -21,10 +23,12 @@ const rowHandler = (data, event) => {
         $('#id').val(data.id);
         $('#name').val(data.name);
         $('#description').val(data.description);
+        $('#is_required').prop('checked', data.is_required);
     } else {
         $('#id').val('');
         $('#name').val('');
         $('#description').val('');
+        $('#is_required').prop('checked', false);
     }
 
     if (event) {
@@ -34,14 +38,8 @@ const rowHandler = (data, event) => {
         toggleActiveList.forEach((element) => {
             deleted ? window.AGGridUtils.setHidden(element) : window.AGGridUtils.removeHidden(element);
         });
-        toggleDeletedList.forEach((element) => {
-            deleted ? window.AGGridUtils.removeHidden(element) : window.AGGridUtils.setHidden(element);
-        });
     } else {
         toggleActiveList.forEach((element) => {
-            window.AGGridUtils.setHidden(element);
-        });
-        toggleDeletedList.forEach((element) => {
             window.AGGridUtils.setHidden(element);
         });
         window.AGGridUtils.removeHidden('add');
@@ -60,7 +58,7 @@ function makeDatasource() {
                     filterModel: params.filterModel,
                 };
 
-                const resp = await fetch("/api/admin/subject-area", {
+                const resp = await fetch("/api/admin/team-attributes", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -97,8 +95,8 @@ function wireButtons(params) {
 
     document.querySelector("#btnExportCsv").addEventListener("click", async () => {
         await window.AGGridUtils.exportCsvAll(params, {
-            url: "/api/admin/subject-area/csv",
-            filename: "subbject_area.csv",
+            url: "/api/admin/team-attributes/csv",
+            filename: "team_attributes.csv",
             teamId: $("#team_id").val(),
             csrfToken: window.csrf_token,
         });
@@ -141,22 +139,22 @@ $("#team_id").on("change", () => {
 });
 
 /* Ajax to back for CRUD */
-const inputAttributes = ['id', 'team_id', 'name', 'description'];
+const inputAttributes = ['id', 'team_id', 'name', 'description', 'is_required'];
 const requiredAttributes = ['name', 'description'];
 
 var postRequests = new postRequests(
-    'SubjectArea',
-    'Предметная область',
+    'TeamAttributes',
+    'Атрибуты карточки контроля',
     inputAttributes
 );
 
-$('#add, #update, #remove, #hardRemove, #restore').on('click', function() {
+$('#add, #update, #hardRemove').on('click', function() {
     if (!postRequests.verifyFileds(requiredAttributes)) {
         return;
     };
 
     postRequests.postRequest(
-        `api/admin/subject-area` + (this.id != "add" ? `/${$("#id").val()}` : ""), 
+        `api/admin/team-attributes` + (this.id != "add" ? `/${$("#id").val()}` : ""), 
         this.id,
         this.id == 'hardRemove' ? 'hardDelete=True' : undefined,
         this.id == "add" ? "PUT" : undefined

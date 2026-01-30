@@ -51,7 +51,7 @@ setTimeout(function() {
         icon: 'warning',
         title: 'Время сессии истекло!',
         html: 'Для повторной авторизации <br>нажмите OK',
-        showConfirmButton: true,
+        confirmButtonText: 'Ок',
         allowOutsideClick: true
     }).then(function(result) {
         window.location.href = window.location.protocol + '//' + window.location.host;

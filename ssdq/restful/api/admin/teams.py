@@ -10,12 +10,53 @@ from ....models.dict import dq_source_sdim
 from ....logger.log import LogEvent
 from ....security.verify import InputValidator
 from ....vault.utils import Vault
+from ..aggrid import AGGrid
+
+
+ALLOWED_COLS = {
+    "id": Teams.id,
+    "name": Teams.name,
+    "display_name": Teams.json["display_name"].as_string(),
+    "description": Teams.description,
+    "jira_project": Teams.json["jira_project"].as_string()
+}
+
+TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
+SET_OPS = {"set"}  # agSetColumnFilter
+
+
+# custom query for grid
+def users_base_query(payload):
+    q = db.session.query(
+        Teams.id,
+        Teams.name,
+        Teams.json["display_name"].label("display_name"),
+        Teams.description,
+        Teams.json["jira_project"].label("jira_project")
+    )
+    return q
 
 
 class AdminTeams:
     def __init__(self):
-        pass
-    
+        self.grid = AGGrid(
+            obj=Teams,
+            allowed_cols=ALLOWED_COLS,
+            text_ops=TEXT_OPS,
+            date_ops=DATE_OPS,
+            set_ops=SET_OPS,
+            base_query_fn=users_base_query
+        )
+        
+    def get_grid(self):
+        return self.grid.get_grid()
+
+    def export_csv_stream(self):
+        return self.grid.export_csv_stream(
+            filename="teams.csv"
+        )
+        
     @staticmethod
     def get_data(id:str):
         try:
@@ -40,68 +81,6 @@ class AdminTeams:
                 )
             )
             return response
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
-
-    @staticmethod
-    def get_datatable():
-        try:
-            attributes = {
-                0: Teams.id,
-                1: Teams.name,
-                2: Teams.json["display_name"].cast(String),
-                3: Teams.description,
-                4: Teams.json["jira_project"].cast(String)
-            }
-            search_value = request.form['search[value]']
-            search = None if search_value is None or search_value == '' else f'%%{search_value.lower()}%%'
-            row = int(request.form['start'])
-            rowperpage = int(request.form['length'])
-            if request.form.get('order[0][column]'):
-                order_attr = attributes[int(request.form['order[0][column]'])]
-                order_dir = request.form['order[0][dir]']
-                order = order_attr if order_dir == 'asc' else order_attr.desc()
-            else:
-                order = Teams.id
-            
-            query = db.session.query(
-                Teams.id,
-                Teams.name,
-                Teams.json["display_name"].label("display_name"),
-                Teams.description,
-                Teams.json["jira_project"].label("jira_project")
-            )
-            if search:
-                query = query.filter(
-                    or_(
-                        Teams.id.cast(String).ilike(search),
-                        Teams.name.ilike(search),
-                        Teams.json["display_name"].cast(String).ilike(search),
-                        Teams.json["jira_project"].cast(String).ilike(search),
-                        Teams.description.ilike(search)
-                    )
-                )
-            dataset = query.order_by(order).limit(rowperpage).offset(row).all()
-            data = [dict(
-                id=row.id,
-                name=row.name,
-                display_name=row.display_name,
-                description=row.description,
-                jira_project=row.jira_project
-            ) for row in dataset]
-            
-            total_records = int(Teams.query.count())
-            total_record_filtered = total_records if search is None else int(query.count())
-            
-            response = {
-                'draw': request.form['draw'],
-                'iTotalRecords': total_records,
-                'iTotalDisplayRecords': total_record_filtered,
-                'aaData': data,
-            }
-            return response
-        
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
@@ -158,7 +137,7 @@ class AdminTeams:
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
-
+    
 
 class TeamConnection:
     def __init__(self):

@@ -43,12 +43,12 @@
               <div class="card-header bg-primary">
                 <h3 class="card-title">Добавление типа контроля</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
+                  <button type="button" class="btn btn-tool" data-toggle="collapse" data-target="#cardBody">
                     <i class="fas fa-minus"></i>
                   </button>
                 </div>
               </div>
-              <div class="card-body">
+              <div class="card-body collapse show" id="cardBody">
                 <div class="row">
                   <div class="col-sm-6">
                     <div class="form-group">
@@ -56,28 +56,36 @@
                       <input type="text" class="form-control" id="id" name="id" readonly>
                     </div>
                     <div class="form-group">
-                      <label>Наименование</label>
-                      <input type="text" class="form-control" id="name" name="name" required
-                        {% if current_user.role_name != "Admin" %} readonly {% endif %}>
+                      <label>Команда</label>
+                      <select class="form-control" id="team_id" name="team_id" onchange="" required>
+                        {% for team in teams %}
+                        <option value="{{team.id}}" {% if current_user.team_id == team.id %}selected{% endif %}>{{team.name}}</option>
+                        {% endfor %}
+                      </select>
                     </div>
                   </div>
                   <div class="col-sm-6">
                     <div class="form-group">
+                      <label>Наименование</label>
+                      <input type="text" class="form-control" id="name" name="name" required
+                        {% if current_user.role_name not in ["Admin", "TeamOwner"] %} readonly {% endif %}>
+                    </div>
+                    <div class="form-group">
                       <label>Описание</label>
                       <textarea class="form-control" id="description" name="description" style="height: 123px;" required
-                        {% if current_user.role_name != "Admin" %} readonly {% endif %}></textarea>
+                        {% if current_user.role_name not in ["Admin", "TeamOwner"] %} readonly {% endif %}></textarea>
                     </div>
                   </div>
                   <br>
                   <div class="col-sm-6">
-                    {% if current_user.admin %}
+                    {% if current_user.role_name == "TeamOwner" or current_user.admin %}
                     <button type="button" style="float:left; width:25%;" class="btn btn-outline-primary" id="add">Добавить</button>
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="update">Изменить</button>
                     <button type="button" style="float:right; width:25%; display:none;" class="btn btn-outline-primary" id="restore">Восстановить</button>
                     {% endif %}
                   </div>
                   <div class="col-sm-6">
-                    {% if current_user.admin %}
+                    {% if current_user.role_name == "TeamOwner" or current_user.admin %}
                     <button type="button" style="float:left; width:25%; display:none;" class="btn btn-outline-primary" id="remove">Удалить</button>
                     <button type="button" style="float:left; width:25%; display:none; margin-left: 2vw;" class="btn btn-outline-primary" id="hardRemove">Удалить насвегда</button>
                     {% endif %}
@@ -93,24 +101,17 @@
             <div class="card-header bg-primary">
               <h3 class="card-title">Все типы контролей</h3>
             </div>
-            <!-- /.card-header -->
             <div class="card-body">
-              <div id="table">
-              <table id="controlTypes" class="table table-bordered table-striped">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Описание</th>
-                    <th>Удален</th>
-                  </tr>
-                </thead>
-              </table>
-            <!-- /.card-body -->
-          </div>
-        </div>
+              <div style="display:flex; gap:12px; align-items:center; margin-bottom: 10px;">
+                <button id="btnResetFilters" class="btn btn-outline-primary">Сброс фильтров</button>
+                <button id="btnResetColumns" class="btn btn-outline-primary">Сброс колонок</button>
+                <button id="btnExportCsv" class="btn btn-outline-primary">Экспорт CSV (всё по фильтрам)</button>
+              </div>
+
+              <div id="controlTypeGrid" class="ag-theme-quartz" style="height: 700px; width: 100%;"></div>
+            </div>
         <!--/.col (right) -->
-      </div>
+          </div>
         </div>
       </div>
     </div>
@@ -133,13 +134,10 @@
 <script src="/static/assets/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/static/assets/node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
 <!-- DataTables -->
-<script src="/static/assets/node_modules/datatables.net/js/dataTables.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
-<script src="/static/assets/node_modules/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-
+<script src="/static/assets/node_modules/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script src="/static/assets/js/datatable_handler/utils.js"></script>
-<script src="/static/assets/js/datatable_handler/datatable_handler.js"></script>
+<script src="/static/assets/js/ag_grid/toggle_columns.js"></script>
+<script src="/static/assets/js/ag_grid/utils.js"></script>
 <script src="/static/assets/js/views/admin/control_types.js"></script>
 
 {% endblock javascripts %}

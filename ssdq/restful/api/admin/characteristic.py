@@ -1,15 +1,14 @@
-from ....models.dict import dq_segment_sdim
+from ....models.dict import dq_characteristic_sdim
 from ....logger.log import LogEvent
 from ....app.extensions import db
 from ..aggrid import AGGrid
-from .wtforms import TeamDictForm
+from .wtforms import SysDictForm
 
 
 ALLOWED_COLS = {
-    "id": dq_segment_sdim.id,
-    "name": dq_segment_sdim.name,
-    "description": dq_segment_sdim.description,
-    "deleted_flag": dq_segment_sdim.deleted_flag
+    "id": dq_characteristic_sdim.id,
+    "name": dq_characteristic_sdim.name,
+    "description": dq_characteristic_sdim.description
 }
 
 TEXT_OPS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
@@ -17,10 +16,10 @@ DATE_OPS = {"equals", "lessThan", "greaterThan", "inRange", "blank", "notBlank"}
 SET_OPS = {"set"}  # agSetColumnFilter
 
 
-class AdminSegments():
+class AdminCharacteristic():
     def __init__(self):
         self.grid = AGGrid(
-            obj=dq_segment_sdim,
+            obj=dq_characteristic_sdim,
             allowed_cols=ALLOWED_COLS,
             text_ops=TEXT_OPS,
             date_ops=DATE_OPS,
@@ -30,16 +29,15 @@ class AdminSegments():
     @staticmethod
     def add():
         try:
-            form = TeamDictForm()
+            form = SysDictForm()
             if form.validate():
-                entity = dq_segment_sdim(
+                entity = dq_characteristic_sdim(
                     name=form.name.data,
-                    description=form.description.data,
-                    team_id=form.team_id.data
+                    description=form.description.data
                 )
                 db.session.add(entity)
                 db.session.commit()
-                LogEvent.log_event(eventName="createEntity", entityName="segment", entityId=entity.id)
+                LogEvent.log_event(eventName="createEntity", entityName="characteristic", entityId=entity.id)
                 return '', 204
             else:
                 return {"message": "CSRF Token Missing or Invalid"}, 403 
@@ -50,51 +48,36 @@ class AdminSegments():
     @staticmethod
     def update(id:str):
         try:
-            form = TeamDictForm()
+            form = SysDictForm()
             if form.validate():
-                entity = dq_segment_sdim.query.filter_by(id=id).update(dict(
+                entity = dq_characteristic_sdim.query.filter_by(id=id).update(dict(
                     name=form.name.data,
                     description=form.description.data
                 ))
                 db.session.commit()
-                LogEvent.log_event(eventName="updateEntity", entityName="segment", entityId=str(id))
+                LogEvent.log_event(eventName="updateEntity", entityName="characteristic", entityId=str(id))
                 return '', 204
             else:
                 return {"message": "CSRF Token Missing or Invalid"}, 403 
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
-        
-    @staticmethod
-    def delete_restore(id:str, restore=False):
-        try:
-            entity = dq_segment_sdim.query.filter_by(id=id).update(dict(
-                deleted_flag='N' if restore else 'Y'
-            ))
-            db.session.commit()
-            LogEvent.log_event(eventName="updateEntity" if restore else "deleteEntity", 
-                               entityName="segment", entityId=str(id))
-            return '', 204
-        except Exception as ex:
-            LogEvent.log_error(ex)
-            raise ex
 
     @staticmethod
-    def hard_delete(id:str):
+    def delete(id:str):
         try:
-            entity = dq_segment_sdim.query.filter_by(id=id).delete()
+            entity = dq_characteristic_sdim.query.filter_by(id=id).delete()
             db.session.commit()
-            LogEvent.log_event(eventName="deleteEntity", entityName="segment", entityId=str(id))
+            LogEvent.log_event(eventName="deleteEntity", entityName="characteristic", entityId=str(id))
             return '', 204
         except Exception as ex:
             LogEvent.log_error(ex)
             raise ex
         
     def get_grid(self):
-        return self.grid.get_grid(base_filters={"teamId": dq_segment_sdim.team_id})
+        return self.grid.get_grid()
 
     def export_csv_stream(self):
         return self.grid.export_csv_stream(
-            filename="dq_segment_sdim.csv",
-            base_filters={"teamId": dq_segment_sdim.team_id},
+            filename="dq_characteristic_sdim.csv"
         )

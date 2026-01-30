@@ -1,19 +1,11 @@
-const gridDiv = document.querySelector("#subjectAreaGrid");
+const gridDiv = document.querySelector("#characteristicGrid");
 
-const toggleActiveList = ['update', 'remove', 'hardRemove'];
-const toggleDeletedList = ['restore'];
+const toggleActiveList = ['update', 'hardRemove'];
 
 const columnDefs = [
     { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
     { headerName: "Наименование", field: "name", colId: "name", filter: "agTextColumnFilter" },
-    { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" },
-    {
-        headerName: "Удален",
-        field: "deleted_flag",
-        colId: "deleted_flag",
-        filter: "agTextColumnFilter",
-        width: 120,
-    }
+    { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" }
 ];
 
 const rowHandler = (data, event) => {
@@ -34,14 +26,8 @@ const rowHandler = (data, event) => {
         toggleActiveList.forEach((element) => {
             deleted ? window.AGGridUtils.setHidden(element) : window.AGGridUtils.removeHidden(element);
         });
-        toggleDeletedList.forEach((element) => {
-            deleted ? window.AGGridUtils.removeHidden(element) : window.AGGridUtils.setHidden(element);
-        });
     } else {
         toggleActiveList.forEach((element) => {
-            window.AGGridUtils.setHidden(element);
-        });
-        toggleDeletedList.forEach((element) => {
             window.AGGridUtils.setHidden(element);
         });
         window.AGGridUtils.removeHidden('add');
@@ -53,14 +39,13 @@ function makeDatasource() {
         getRows: async (params) => {
             try {
                 const body = {
-                    teamId: $("#team_id").val(),
                     startRow: params.startRow,
                     endRow: params.endRow,
                     sortModel: params.sortModel,
                     filterModel: params.filterModel,
                 };
 
-                const resp = await fetch("/api/admin/subject-area", {
+                const resp = await fetch("/api/admin/characteristic", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -97,9 +82,8 @@ function wireButtons(params) {
 
     document.querySelector("#btnExportCsv").addEventListener("click", async () => {
         await window.AGGridUtils.exportCsvAll(params, {
-            url: "/api/admin/subject-area/csv",
-            filename: "subbject_area.csv",
-            teamId: $("#team_id").val(),
+            url: "/api/admin/characteristic/csv",
+            filename: "dq_characteristic_sdim.csv",
             csrfToken: window.csrf_token,
         });
     });
@@ -135,33 +119,28 @@ const gridOptions = {
 
 const gridApi = agGrid.createGrid(gridDiv, gridOptions);
 
-$("#team_id").on("change", () => {
-    gridApi.setGridOption("datasource", makeDatasource());
-    gridApi.paginationGoToFirstPage();
-});
-
 /* Ajax to back for CRUD */
-const inputAttributes = ['id', 'team_id', 'name', 'description'];
+const inputAttributes = ['id', 'name', 'description'];
 const requiredAttributes = ['name', 'description'];
 
 var postRequests = new postRequests(
-    'SubjectArea',
-    'Предметная область',
+    'Characteristic',
+    'Характеристика',
     inputAttributes
 );
 
-$('#add, #update, #remove, #hardRemove, #restore').on('click', function() {
+$('#add, #update, #hardRemove').on('click', function() {
     if (!postRequests.verifyFileds(requiredAttributes)) {
         return;
     };
 
     postRequests.postRequest(
-        `api/admin/subject-area` + (this.id != "add" ? `/${$("#id").val()}` : ""), 
+        `api/admin/characteristic` + (this.id != "add" ? `/${$("#id").val()}` : ""), 
         this.id,
         this.id == 'hardRemove' ? 'hardDelete=True' : undefined,
         this.id == "add" ? "PUT" : undefined
     );
-    inputAttributes.filter(item => item !== 'team_id').forEach(e => {
+    inputAttributes.forEach(e => {
         $(`#${e}`).val('');
     });
     rowHandler(null);

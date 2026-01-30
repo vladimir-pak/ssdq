@@ -8,6 +8,7 @@
 <!-- Theme style -->
 <link rel="stylesheet" href="/static/assets/css/dq_mon.css">
 <link rel="stylesheet" href="/static/assets/css/1.css">
+<link rel="stylesheet" href="/static/assets/css/toggle-btn.css">
 {% endblock stylesheets %} {% block content %}
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
@@ -47,9 +48,6 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <button type="button" class="btn btn-block btn-default"
-                            onclick="redirectCotrol('show')">Вывести карточку контроля
-                    </button>
                     <button type="button" class="btn btn-block btn-default" id="printSpec"
                             onclick="window.print()">Распечатать
                     </button>
@@ -83,22 +81,12 @@
                         </a>
                     </div>
                     <div class="col-sm-1">
-                        <a data-title="Выключить" id="pauseDag"
-                            class="nav-link tip">
-                            <i class="fas fa-ban fa-lg"></i>
+                        <a data-title="Вкл/выкл контроль в Airflow" class="nav-link tip">
+                            <i id="dagToggle" class="fas fa-toggle-off fa-toggle"></i>
                         </a>
                     </div>
-                    <div class="col-sm-1">
-                        <a data-title="Включить" id="unpauseDag"
-                            class="nav-link tip">
-                            <i class="fas fa-redo fa-lg"></i>
-                        </a>
-                    </div>
-                    <div class="col-sm-1">
-                        <a href="/controls/create" data-title="Создать ККД"
-                            class="nav-link tip">
-                            <i class="nav-icon fas fa-plus fa-lg"></i>
-                        </a>
+                    <div class="col-sm-3">
+                        <button type="button" class="btn btn-outline-primary" onclick="redirectCotrol('create')">Создать контроль</button>
                     </div>
                 </div>
                 <br>
@@ -179,8 +167,33 @@
                                                     <label for="control_type">Предметная область контроля</label>
                                                     <p>{{card.subject_area_name}}</p>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label for="control_type">Характеристика КД</label>
+                                                    <p>{{card.characteristic_name}}</p>
+                                                </div>
                                             </div>
                                         </div>
+                                        <br>
+                                        <h5 style='color: #5e9ca0; text-align: left;'>
+                                            <span style='color:#000000;'>
+                                                Атрибуты команды
+                                            </span>
+                                        </h5>
+                                        <table class="table table-bordered" style="border-collapse:collapse">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Наименование атрибута</th>
+                                                    <th>Значение</th>
+                                                </tr>
+                                                {% for k, v in card.team_attributes.items() %}
+                                                <tr>
+                                                    <td>{{ k }}</th>
+                                                    <td>{{ v }}</th>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        <br>
                                         <h5 style='color: #5e9ca0; text-align: left;'>
                                             <span style='color:#000000;'>
                                                 Характеристики
@@ -272,6 +285,7 @@
 
 <script type="text/javascript">
     window.csrf_token = "{{ csrf_token() }}";
+    window.teamId = "{{ current_user.team_id }}";
 </script>
 <!-- jQuery -->
 <script src="/static/assets/node_modules/jquery/dist/jquery.min.js"></script>
@@ -282,5 +296,11 @@
 <script src="/static/assets/js/views/controls/cards.js"></script>
 <!-- function to initialize bootstrap elements -->
 <script src="/static/assets/js/api/apiAirflow.js"></script>
+<script type="text/javascript">
+    var jinjaId = "{{ card.id }}";
+    if (jinjaId) {
+        getDagStatus(jinjaId);
+    };
+</script>
 
 {% endblock javascripts %}

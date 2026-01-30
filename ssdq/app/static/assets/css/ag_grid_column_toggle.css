@@ -1,0 +1,32 @@
+/* заставляем кастомный header не быть layout-контейнером */
+.ag-theme-quartz .ag-custom-header {
+    display: contents;   /* 🔥 ВАЖНО */
+}
+
+.ag-theme-quartz .ag-header-cell-comp-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* текст */
+.ag-theme-quartz .ag-custom-header-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* кнопка */
+.ag-theme-quartz .ag-custom-header-hidebtn {
+    flex: 0 0 auto;
+    margin-left: auto;   /* ✅ теперь РАБОТАЕТ */
+    opacity: 0;
+    line-height: 1;
+}
+
+/* hover */
+.ag-theme-quartz .ag-header-cell:hover .ag-custom-header-hidebtn {
+    opacity: 1;
+}
