@@ -1,7 +1,20 @@
 const gridDiv = document.querySelector("#monitoringGrid");
 
 const columnDefs = [
-    { headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter" },
+    { 
+        headerName: "ID", field: "id", colId: "id", filter: "agTextColumnFilter",
+        cellRenderer: (params) => {
+            if (!params.value) return "";
+
+            const a = document.createElement("a");
+            a.href = `/controls?id=${params.value}`;
+            a.textContent = params.value;
+            a.style.cursor = "pointer";
+            a.style.textDecoration = "underline";
+
+            return a;
+        }
+    },
     { headerName: "Наименование", field: "name", colId: "name", filter: "agTextColumnFilter", minWidth: 155 },
     { headerName: "Описание", field: "description", colId: "description", filter: "agTextColumnFilter" },
     { headerName: "Условие отбора", field: "conditions", colId: "conditions", filter: "agTextColumnFilter", minWidth: 160 },

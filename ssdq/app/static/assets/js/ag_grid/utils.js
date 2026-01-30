@@ -94,6 +94,7 @@
             rowSelection: {
                 mode: "singleRow",
                 enableClickSelection: false,
+                checkboxes: false, 
             },
 
             // onGridReady пусть задаётся страницей, потому что datasource разный

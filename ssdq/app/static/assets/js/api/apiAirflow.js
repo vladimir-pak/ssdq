@@ -116,8 +116,10 @@ const getDagStatus = (controlId) => {
         const enabled = data.status === 'enabled';
 
         $toggle
+            .toggleClass('active', enabled)
             .toggleClass('fa-toggle-on', enabled)
             .toggleClass('fa-toggle-off', !enabled);
+            
     }).fail(function (data) {
         console.error(data.responseJSON?.message ?? 'Ошибка получения статуса DAG');
     });
