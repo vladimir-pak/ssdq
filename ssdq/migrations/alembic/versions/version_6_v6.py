@@ -11,6 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import Column, String, DateTime
 from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
 
 
 # revision identifiers, used by Alembic.
@@ -32,6 +33,43 @@ def upgrade() -> None:
         if_not_exists=True,
         schema="ssdq"
     )
+    
+    op.bulk_insert(
+        dq_characteristic_sdim,
+        [
+            {
+                "id": uuid4(),
+                "name": "Полнота",
+                "description": "Полнота"
+            },
+            {
+                "id": uuid4(),
+                "name": "Актуальность",
+                "description": "Актуальность"
+            },
+            {
+                "id": uuid4(),
+                "name": "Согласованность",
+                "description": "Согласованность"
+            },
+            {
+                "id": uuid4(),
+                "name": "Точность и достоверность",
+                "description": "Точность и достоверность"
+            },
+            {
+                "id": uuid4(),
+                "name": "Уникальность",
+                "description": "Уникальность"
+            },
+            {
+                "id": uuid4(),
+                "name": "Целостность",
+                "description": "Целостность"
+            },
+        ]
+    )
+    
     op.add_column("tags", Column("tag_type", String(length=50)), schema="ssdq")
     op.add_column("dq_control_type_sdim", Column("team_id", UUID(as_uuid=True)), schema="ssdq")
 
