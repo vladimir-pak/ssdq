@@ -161,7 +161,7 @@ class ImportControls:
                     row["object_id"] = object_id
 
                     tag_id = []
-                    if row["tags"]:
+                    if "tags" in row and row["tags"]:
                         for tag in row["tags"].split(","):
                             bd_id = db.session.query(tags.id).filter_by(
                                 name=tag
