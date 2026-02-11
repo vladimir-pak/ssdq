@@ -9,7 +9,7 @@ from ..logger.log import LogEvent
 from ..models.constants import ControlStatus, AlertingType, JiraMode, DagType
 from ..models.user import Users
 from ..models.dict import dq_segment_sdim, dq_pattern_sdim, dq_control_type_sdim, \
-    subject_area_sdim, dq_source_sdim, dq_object_sdim, tags
+    subject_area_sdim, dq_source_sdim, dq_object_sdim, tags, dq_characteristic_sdim
 from ..controls.controls import Controls
 
 
@@ -98,6 +98,11 @@ class ImportControls:
                         subject_area_id = self.__get_attr(subject_area_sdim, entity="subject_area", name=row["subject_area"], team_id=team_id)
                         row["subject_area_id"] = subject_area_id
                         del row["subject_area"]
+                        
+                    if "characteristic" in row:
+                        characteristic_id = self.__get_attr(dq_characteristic_sdim, entity="dq_characteristic", name=row["characteristic"])
+                        row["characteristic_id"] = characteristic_id
+                        del row["characteristic"]
 
                     alerting_type_id = AlertingType[row["alerting_type"]].value
                     row["alerting_type_id"] = alerting_type_id

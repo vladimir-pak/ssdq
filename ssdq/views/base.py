@@ -261,7 +261,7 @@ def redirect_superset():
 
 @app_routes.get('/streamlit')
 def redirect_streamlit():
-    if current_user.team_name in current_app.config['STREAMLIT_ACCEPTANCE']:
+    if current_user.team_eng_name in current_app.config['STREAMLIT_ACCEPTANCE'] or current_user.admin:
         return render_template('home/streamlit.html')
     else:
         return render_template('home/insufficient-privileges.html')

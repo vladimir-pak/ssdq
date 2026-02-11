@@ -321,11 +321,15 @@ class Controls:
             raise ex
 
     def create(self, data:dict=None):
+        control_id = None
         try:
             if not data:
                 data = request.get_json()
-            team_attributes = json.loads(data['team_attributes'])
-            del data['team_attributes']
+            if 'team_attributes' in data:
+                team_attributes = json.loads(data['team_attributes'])
+                del data['team_attributes']
+            else:
+                team_attributes = None
             
             control = dq_control_sdim(
                 name=data["control_name"],
@@ -359,8 +363,9 @@ class Controls:
         except Exception as ex:
             LogEvent.log_error(ex)
             db.session.rollback()
-            dq_control_sdim.query.filter_by(id=control_id).delete()
-            db.session.commit()
+            if control_id:
+                dq_control_sdim.query.filter_by(id=control_id).delete()
+                db.session.commit()
             return {"message": str(ex)}, 500
 
     def update(self, id:str|int):
